@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_plus/webview_flutter_plus.dart';
+
 class WebViewExample extends StatefulWidget {
   @override
   _WebViewExampleState createState() => _WebViewExampleState();
 }
 
 class _WebViewExampleState extends State<WebViewExample> {
-  late WebViewController _controller;
+  late WebViewControllerPlus _controller;
   final BUNDLE_URL = 'https://minio.finpos.global/getpay-cdn/webcheckout/bundle.js';
 
   final String htmlContent = '''
@@ -29,7 +30,12 @@ class _WebViewExampleState extends State<WebViewExample> {
   @override
   void initState() {
     super.initState();
-   _controller= WebViewController()
+   _controller= WebViewControllerPlus(
+    onPermissionRequest: (request) {
+    request.platform.grant();
+    
+    },
+   )
   ..setJavaScriptMode(JavaScriptMode.unrestricted)..loadHtmlString(htmlContent);
   }
   
@@ -44,7 +50,7 @@ class _WebViewExampleState extends State<WebViewExample> {
       body: WebViewWidget(
 
           controller :_controller
-      ),
+      )
     );
   }
 }
