@@ -8,17 +8,31 @@ class WebViewExample extends StatefulWidget {
 class _WebViewExampleState extends State<WebViewExample> {
   late WebViewController _controller;
   final BUNDLE_URL = 'https://minio.finpos.global/getpay-cdn/webcheckout/bundle.js';
+
+  final String htmlContent = '''
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/>
+        <title>Your Business Title</title>
+        <script defer="defer" src="https://minio.finpos.global/getpay-cdn/webcheckout/bundle.js"></script>
+      </head>
+      <body>
+        <div id="checkout"></div>
+      </body>
+    </html>
+  ''';
+
   
 
   @override
   void initState() {
     super.initState();
-    // Enable JavaScript if you're going to use it.
-    _controller = WebViewController(
-    
-    )..loadRequest(Uri.parse(BUNDLE_URL))
-    ..setJavaScriptMode(JavaScriptMode.unrestricted);
+   _controller= WebViewController()
+  ..setJavaScriptMode(JavaScriptMode.unrestricted)..loadHtmlString(htmlContent);
   }
+  
 
   @override
   Widget build(BuildContext context) {
