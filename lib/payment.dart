@@ -1,3 +1,6 @@
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
@@ -8,10 +11,10 @@ class WebViewExample extends StatefulWidget {
 
 class _WebViewExampleState extends State<WebViewExample> {
   late WebViewControllerPlus _controller;
-  final BUNDLE_URL = 'https://minio.finpos.global/getpay-cdn/webcheckout/bundle.js';
+  final BUNDLE_URL =
+      'https://minio.finpos.global/getpay-cdn/webcheckout/bundle.js';
 
   final String htmlContent = '''
-    <!DOCTYPE html>
     <html lang="en">
       <head>
         <meta charset="utf-8" />
@@ -23,34 +26,79 @@ class _WebViewExampleState extends State<WebViewExample> {
         <div id="checkout"></div>
       </body>
     </html>
-  ''';
-
-  
+''';
 
   @override
   void initState() {
     super.initState();
-   _controller= WebViewControllerPlus(
-    onPermissionRequest: (request) {
-    request.platform.grant();
-    
-    },
-   )
-  ..setJavaScriptMode(JavaScriptMode.unrestricted)..loadHtmlString(htmlContent);
+    _controller = WebViewControllerPlus()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (_) => _enableLocalStorageAccess(),
+          onWebResourceError: (WebResourceError error) {
+            print('WebView error: ${error.description}');
+          },
+        ),
+      )
+      ..loadHtmlString(htmlContent, baseUrl: 'http://localhost:3000')
+      // ..clearLocalStorage()
+      // ..clearCache()
+      ..setNavigationDelegate(NavigationDelegate(
+        onProgress: (int progress) {
+          log('WebView is loading (progress : $progress%)');
+        },
+        onPageStarted: (String url) {
+          log('Page started loading: $url');
+        },
+        onPageFinished: (String url) async {
+          log('Page finished loading: $url');
+        },
+        onWebResourceError: (WebResourceError error) {
+          log('''
+                Page resource error:
+                code: ${error.errorCode}
+                description: ${error.description}
+                errorType: ${error.errorType}
+                isForMainFrame: ${error.isForMainFrame}
+                ''');
+        },
+        onHttpError: (HttpResponseError error) {
+          log('Error occurred on page: ${error.response?.statusCode}');
+        },
+        onNavigationRequest: (NavigationRequest request) {
+          if (request.url.startsWith('https://') ||
+              request.url.startsWith('http://')) {
+            log('Allowing navigation to: ${request.url}');
+            return NavigationDecision.navigate;
+          } else {
+            log('Blocking navigation to: ${request.url}');
+            return NavigationDecision.prevent;
+          }
+        },
+      ));
   }
-  
+
+  Future<void> _enableLocalStorageAccess() async {
+    await _controller.runJavaScript('''
+      try {
+        window.localStorage.setItem('test', 'value');
+        console.log('localStorage test:', window.localStorage.getItem('test'));
+      } catch (e) {
+        console.error('Failed to access local storage:', e);
+      }
+    ''');
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('GetPay Checkout'),
-        
       ),
       body: WebViewWidget(
-
-          controller :_controller
-      )
+        controller: _controller,
+      ),
     );
   }
 }

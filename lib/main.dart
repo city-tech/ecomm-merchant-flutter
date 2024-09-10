@@ -26,12 +26,14 @@ class MyApp extends StatelessWidget {
 }
 
 class CheckoutPage extends StatefulWidget {
+  // final double price = 1000.0;
   @override
   _CheckoutPageState createState() => _CheckoutPageState();
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
   late WebViewControllerPlus _controller;
+  static double price = 1000;
 
 
   @override
@@ -39,8 +41,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
     // TODO: implement dispose
   
 
-    _controller.platform.clearCache();
-    _controller.platform.clearLocalStorage();
+    // _controller.platform.clearCache();
+    // _controller.platform.clearLocalStorage();
   
     _controller.removeJavaScriptChannel('Toaster',);
       super.dispose();
@@ -52,7 +54,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   // Dynamic HTML content
    String htmlContent = '''
-  <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -99,7 +100,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         papInfo: "eyJpbnN0aXR1dGlvbklkIjoiMDAwIiwibWlkIjoiMTIxMjEyMTIxMjEyMTIxIiwidGlkIjoiMTIzNDU2NzgifQ==",
         oprKey: "4fa4c6b9-3f91-43e5-9b4f-319f68187ba5",
         insKey: "000",
-        websiteDomain: "http://localhost",
+        websiteDomain: "http://localhost:3000",
         price: "1000",  // Replace with your dynamic price calculation
         businessName: "OneStop Shopping - Kathmandu",
         imageUrl: "IMAGE_URL",
@@ -157,10 +158,44 @@ class _CheckoutPageState extends State<CheckoutPage> {
     @override
   void initState() {
     super.initState();
-  
+   _enableLocalStorageAccess();
+    // _configureWebSettings();
+    
+
    
   }
 
+  
+  Future<void> _enableLocalStorageAccess() async {
+    if (_controller != null) {
+      await _controller!.runJavaScriptReturningResult('''
+        try {
+          window.localStorage.setItem('test', 'value');
+          window.localStorage.getItem('test');
+        } catch (e) {
+          console.error('Failed to access local storage:', e);
+        }
+      ''');
+    }
+  }
+  
+  //  Future<void> _configureWebSettings() async {
+  //   if (_controller != null) {
+  //     final WebSettings webSettings = await _controller!.getSettings();
+  //     await _controller!.runJavaScriptReturningResult('''
+  //       try {
+  //         window.webSettings = {
+  //           javaScriptCanOpenWindowsAutomatically: ${webSettings.javaScriptCanOpenWindowsAutomatically},
+  //           supportMultipleWindows: ${webSettings.supportMultipleWindows},
+  //           javaScriptEnabled: ${webSettings.javaScriptEnabled},
+  //           // Add more WebSettings properties as needed
+  //         };
+  //       } catch (e) {
+  //         console.error('Failed to configure WebSettings:', e);
+  //       }
+  //     ''');
+  //   }
+  // }
   
 
   @override
@@ -179,14 +214,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
     },
      )
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      
+
       .then((value)async {
-     
+
         
-      await _controller.runJavaScript(   
-        "window.localStorage.setItem('access_token','  Bearer token');",
-      );})
+        
+  })
+      
       ..loadHtmlString(
-        htmlContent)..clearLocalStorage()..clearCache()
+        htmlContent,baseUrl:'http://localhost:3000')
       ..setNavigationDelegate(NavigationDelegate(
         onProgress: (int progress) {
           log('WebView is loading (progress : $progress%)');
@@ -213,6 +250,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
         onHttpError: (HttpResponseError error) {
             log('Error occurred on page: ${error.response?.statusCode}');
           },
+          onNavigationRequest: (NavigationRequest request){
+                if (request.url.startsWith('https://') || request.url.startsWith('http://')) {
+        log('Allowing navigation to: ${request.url}');
+        return NavigationDecision.navigate;
+      } else {
+        log('Blocking navigation to: ${request.url}');
+        return NavigationDecision.prevent;
+      }
+  
+          },
 
       ))..addJavaScriptChannel(
             'Toaster',
@@ -232,7 +279,27 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 print(message.message.toString());
               }
             },
-          );
+          )..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            // Update loading bar.
+          },
+          onPageStarted: (String url) {},
+          onPageFinished: (String url) {},
+          onWebResourceError: (WebResourceError error) {},
+          onNavigationRequest: (NavigationRequest request) {
+            // This is equivalent to originWhitelist={['*']}
+            // It allows navigation to all origins
+            return NavigationDecision.navigate;
+            
+            // If you want to restrict to specific origins, you can use something like:
+            // if (request.url.startsWith('https://allowed-domain.com')) {
+            //   return NavigationDecision.navigate;
+            // }
+            // return NavigationDecision.prevent;
+          },
+        ),
+      );
      
   
     
@@ -240,12 +307,78 @@ class _CheckoutPageState extends State<CheckoutPage> {
       appBar: AppBar(
         title: Text('Checkout Page'),
       ),
-      body: WebViewWidget(
-      
-        controller: _controller,
-      
+      body: Column(
         
-       
+          //  mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              height: 60.0,
+              decoration: const BoxDecoration(
+                color: Color.fromARGB(255, 241, 235, 179),
+              ),
+              child: const Center(
+
+                child: Text('TEST Online Store',
+                    style: TextStyle(
+                        fontSize: 18)
+                    ),
+              ),
+            ),
+            const Divider(
+              color: Colors.grey, // Customize color
+              thickness: 1, // Line thickness
+            ),
+            const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Cart Items',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.0),
+                )),
+            const SizedBox(height: 20.0),
+            const Row(
+              children: [
+                // Image(image: AssetImage('cup.png'),height: 20.0,width: 20.0),
+                Text('Cup Set', style: TextStyle(fontWeight: FontWeight.bold)),
+                SizedBox(width: 10),
+                Text('Rs 600')
+              ],
+            ),
+            const SizedBox(height: 20.0),
+            const Row(
+              children: [
+                // Image(image: AssetImage('cup.png'),height: 20.0,width: 20.0),
+                Text('Speaker', style: TextStyle(fontWeight: FontWeight.bold)),
+                SizedBox(width: 10),
+                Text('Rs 400')
+              ],
+            ),
+            const SizedBox(height: 20.0),
+            Container(
+              height: 30,
+              decoration: const BoxDecoration(color: Colors.grey),
+              child: const Row(
+                children: [
+                  Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
+                  SizedBox(width: 10),
+                  Spacer(),
+                  Text('Rs 1000')
+                ],
+              ),
+            ),
+            const SizedBox(height: 18.0),
+          Row(
+            children: [
+              Spacer(),
+              Container(
+                height: 70,
+                width: 110,
+                child: WebViewWidget(
+                controller: _controller,  
+                ),
+              ),
+            ],
+          ),
+        ],
       )
     );
   }
