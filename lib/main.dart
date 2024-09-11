@@ -115,8 +115,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
           state: true
         },
         callbackUrl: {
-          successUrl: "SUCCESS_URL",
-          failUrl: "FAIL_URL"
+          successUrl: "https://citytech.global/",
+          failUrl: "https://www.store.com/fail.html"
         },
         themeColor: "#5662FF",
         orderInformationUI: "<p>Order details here</p>",
@@ -271,7 +271,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
               child: const Center(
                 child:
-                    Text('TEST Online Store', style: TextStyle(fontSize: 18)),
+                    Text('asd Online Store', style: TextStyle(fontSize: 18)),
               ),
             ),
             const Divider(
