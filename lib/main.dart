@@ -45,7 +45,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   // Dynamic HTML content
-  String htmlContent = '''
+   String htmlContent = "";
+  @override
+  void initState() {
+    super.initState();
+   htmlContent = '''
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -93,7 +97,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         oprKey: "4fa4c6b9-3f91-43e5-9b4f-319f68187ba5",
         insKey: "000",
         websiteDomain: "http://localhost:3000",
-        price: "$_amountController",  // Replace with your dynamic price calculation
+        price: "1000",  // Replace with your dynamic price calculation
         businessName: "OneStop Shopping - Kathmandu",
         imageUrl: "IMAGE_URL",
         currency: "NPR",
@@ -146,11 +150,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   ''';
 
-  @override
-  void initState() {
-    super.initState();
     _enableLocalStorageAccess();
   }
+
+
 
   Future<void> _enableLocalStorageAccess() async {
     if (_controller != null) {
@@ -169,6 +172,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
   }
+
+     int counter1 = 1;
+     int _counter2 = 1;
+
+     int totalCupPrice = 600;
+     int totalSpeakerPrice = 400;
+
+     bool isCup = false;
+     bool isSpeaker = false;
 
   @override
   Widget build(BuildContext context) {
@@ -253,6 +265,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           children: [
             Container(
               height: 60.0,
+              
               decoration: const BoxDecoration(
                 color: Color.fromARGB(255, 241, 235, 179),
               ),
@@ -272,21 +285,56 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.0),
                 )),
             const SizedBox(height: 20.0),
-            const Row(
-              children: [
-                Text('Cup Set', style: TextStyle(fontWeight: FontWeight.bold)),
-                SizedBox(width: 10),
-                Text('Rs 600')
-              ],
+            ListTile(
+              
+              leading: Container(
+               
+                child:  Image.asset('assets/cup.png'),
+                height: 60,
+              width: 60,
+              ),
+                    
+               title: Text('Cup Set', style: TextStyle(fontWeight: FontWeight.bold)),
+            
+                subtitle: Column(
+                       mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Rs 600'),
+                    Divider(),
+                    Text("Total: ${calculateTotalEachCup(count: counter1,price: 600)}")
+
+                  ],
+                ),
+                trailing: Container(
+                  height: 100,
+                  child: itemCounter1()),
+            
+            ),
+              ListTile(
+              leading: Container(
+                  child:  Image.asset('assets/speaker.png'),
+              
+                height: 60,
+              width: 60,
+              ),
+        
+               title: Text('Speaker', style: TextStyle(fontWeight: FontWeight.bold)),
+            
+                subtitle: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Rs 400'),
+                                 Divider(),
+                    Text("Total: ${calculateTotalEachSpeaker(count: _counter2,price: 400)}")
+                  ],
+                ),
+                trailing: itemCounter2(),
+            
             ),
             const SizedBox(height: 20.0),
-            const Row(
-              children: [
-                Text('Speaker', style: TextStyle(fontWeight: FontWeight.bold)),
-                SizedBox(width: 10),
-                Text('Rs 400')
-              ],
-            ),
+      
              SizedBox(height: 20.0),
             Container(
               height: 60,
@@ -297,14 +345,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                const  Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
                   SizedBox(
                     width: 90 ,
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Total',
-                      ),
-                      keyboardType: TextInputType.number,
-                      controller: _amountController,
-                    ),
+                    child: Text(calculateGrandTotal().toString())
                   ),
                 ],
               ),
@@ -324,5 +365,88 @@ class _CheckoutPageState extends State<CheckoutPage> {
             ),
           ],
         ));
+  }
+
+ Widget itemCounter1(){
+  return Container(
+    width: 140,
+    height: 100,
+    child: Row(children: [
+      Card(child: IconButton(onPressed: (){
+        setState(() {
+          counter1+=1;
+        });
+      }, icon: Icon(Icons.add))),
+      Text(counter1.toString()),
+         Card(child: IconButton(onPressed: (){
+          setState(() {
+            if(counter1 >1){
+                  counter1 -=1;
+            }
+          });
+     
+         }, icon: Icon(Icons.remove)))
+    ],),
+  );
+
+  }
+
+  int totalGrand = 1000;
+int calculateGrandTotal(){
+  
+totalGrand = totalCupPrice + totalSpeakerPrice;
+  return totalGrand;
+
+
+}
+
+
+
+
+
+  int calculateTotalEachCup({required int count,required int price,}){
+   int totalEach  = price * count;
+  
+    totalCupPrice = totalEach;
+   
+   return totalEach;
+
+
+  }
+
+
+
+  int calculateTotalEachSpeaker({required int count,required int price}){
+   int totalEach  = price * count;
+
+    totalSpeakerPrice = totalEach;
+  
+   return totalEach;
+
+
+  }
+
+ Widget itemCounter2(){
+  return Container(
+    width: 150,
+    height: 100,
+    child: Row(children: [
+      Card(child: IconButton(onPressed: (){
+        setState(() {
+          _counter2+=1;
+        });
+      }, icon: Icon(Icons.add))),
+      Text(_counter2.toString()),
+         Card(child: IconButton(onPressed: (){
+          setState(() {
+            if(_counter2 >1){
+                  _counter2 -=1;
+            }
+          });
+     
+         }, icon: Icon(Icons.remove)))
+    ],),
+  );
+
   }
 }
