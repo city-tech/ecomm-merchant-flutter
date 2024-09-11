@@ -1,9 +1,10 @@
-
-
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bundle_js/payment.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
@@ -26,34 +27,25 @@ class MyApp extends StatelessWidget {
 }
 
 class CheckoutPage extends StatefulWidget {
-  // final double price = 1000.0;
   @override
   _CheckoutPageState createState() => _CheckoutPageState();
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
   late WebViewControllerPlus _controller;
-  static double price = 1000;
-
+ static TextEditingController _amountController = TextEditingController();
 
   @override
   void dispose() {
-    // TODO: implement dispose
-  
 
-    // _controller.platform.clearCache();
-    // _controller.platform.clearLocalStorage();
-  
-    _controller.removeJavaScriptChannel('Toaster',);
-      super.dispose();
-
-   
+    _controller.removeJavaScriptChannel(
+      'Toaster',
+    );
+    super.dispose();
   }
 
-
-
   // Dynamic HTML content
-   String htmlContent = '''
+  String htmlContent = '''
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -101,7 +93,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         oprKey: "4fa4c6b9-3f91-43e5-9b4f-319f68187ba5",
         insKey: "000",
         websiteDomain: "http://localhost:3000",
-        price: "1000",  // Replace with your dynamic price calculation
+        price: "$_amountController",  // Replace with your dynamic price calculation
         businessName: "OneStop Shopping - Kathmandu",
         imageUrl: "IMAGE_URL",
         currency: "NPR",
@@ -154,18 +146,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   ''';
 
-
-    @override
+  @override
   void initState() {
     super.initState();
-   _enableLocalStorageAccess();
-    // _configureWebSettings();
-    
-
-   
+    _enableLocalStorageAccess();
   }
 
-  
   Future<void> _enableLocalStorageAccess() async {
     if (_controller != null) {
       await _controller!.runJavaScriptReturningResult('''
@@ -178,65 +164,31 @@ class _CheckoutPageState extends State<CheckoutPage> {
       ''');
     }
   }
-  
-  //  Future<void> _configureWebSettings() async {
-  //   if (_controller != null) {
-  //     final WebSettings webSettings = await _controller!.getSettings();
-  //     await _controller!.runJavaScriptReturningResult('''
-  //       try {
-  //         window.webSettings = {
-  //           javaScriptCanOpenWindowsAutomatically: ${webSettings.javaScriptCanOpenWindowsAutomatically},
-  //           supportMultipleWindows: ${webSettings.supportMultipleWindows},
-  //           javaScriptEnabled: ${webSettings.javaScriptEnabled},
-  //           // Add more WebSettings properties as needed
-  //         };
-  //       } catch (e) {
-  //         console.error('Failed to configure WebSettings:', e);
-  //       }
-  //     ''');
-  //   }
-  // }
-  
 
   @override
   void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
     super.didChangeDependencies();
-    
   }
 
   @override
   Widget build(BuildContext context) {
-     _controller = WebViewControllerPlus(
-         onPermissionRequest: (request) {
-    request.platform.grant();
-    
-    },
-     )
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      
-
-      .then((value)async {
-
-        
-        
-  })
-      
-      ..loadHtmlString(
-        htmlContent,baseUrl:'http://localhost:3000')
+    _controller = WebViewControllerPlus(
+      onPermissionRequest: (request) {
+        request.platform.grant();
+      },
+    )
+      ..setJavaScriptMode(JavaScriptMode.unrestricted).then((value) async {})
+      ..loadHtmlString(htmlContent, baseUrl: 'http://localhost:3000')
       ..setNavigationDelegate(NavigationDelegate(
         onProgress: (int progress) {
           log('WebView is loading (progress : $progress%)');
         },
         onPageStarted: (String url) {
           log('Page started loading: $url');
-          
         },
-        onPageFinished: (String url) async{
+        onPageFinished: (String url) async {
           log('Page finished loading: $url');
-               if (Platform.isAndroid) {
-  
-}
+          if (Platform.isAndroid) {}
         },
         onWebResourceError: (WebResourceError error) {
           log('''
@@ -248,41 +200,39 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 ''');
         },
         onHttpError: (HttpResponseError error) {
-            log('Error occurred on page: ${error.response?.statusCode}');
-          },
-          onNavigationRequest: (NavigationRequest request){
-                if (request.url.startsWith('https://') || request.url.startsWith('http://')) {
-        log('Allowing navigation to: ${request.url}');
-        return NavigationDecision.navigate;
-      } else {
-        log('Blocking navigation to: ${request.url}');
-        return NavigationDecision.prevent;
-      }
-  
-          },
+          log('Error occurred on page: ${error.response?.statusCode}');
+        },
+        onNavigationRequest: (NavigationRequest request) {
+          if (request.url.startsWith('https://') ||
+              request.url.startsWith('http://')) {
+            log('Allowing navigation to: ${request.url}');
+            return NavigationDecision.navigate;
+          } else {
+            log('Blocking navigation to: ${request.url}');
+            return NavigationDecision.prevent;
+          }
+        },
+      ))
+      ..addJavaScriptChannel(
+        'Toaster',
+        onMessageReceived: (JavaScriptMessage message) {
+          print('message trigged' + message.toString());
+          if (message.message == "success") {
+            print('buton clicked');
 
-      ))..addJavaScriptChannel(
-            'Toaster',
-            onMessageReceived: (JavaScriptMessage message) {
-              
-              print('message trigged'+ message.toString());
-              if (message.message == "success") {
-                print('buton clicked');
-             
-         
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => WebViewExample(),
-                  ),
-                );
-              }else{
-                print(message.message.toString());
-              }
-            },
-          )..setNavigationDelegate(
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => WebViewExample(),
+              ),
+            );
+          } else {
+            print(message.message.toString());
+          }
+        },
+      )
+      ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {
-            // Update loading bar.
           },
           onPageStarted: (String url) {},
           onPageFinished: (String url) {},
@@ -291,25 +241,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
             // This is equivalent to originWhitelist={['*']}
             // It allows navigation to all origins
             return NavigationDecision.navigate;
-            
-            // If you want to restrict to specific origins, you can use something like:
-            // if (request.url.startsWith('https://allowed-domain.com')) {
-            //   return NavigationDecision.navigate;
-            // }
-            // return NavigationDecision.prevent;
           },
         ),
       );
-     
-  
-    
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Checkout Page'),
-      ),
-      body: Column(
-        
-          //  mainAxisAlignment: MainAxisAlignment.center,
+        appBar: AppBar(
+          title: Text('Checkout Page'),
+        ),
+        body: Column(
           children: [
             Container(
               height: 60.0,
@@ -317,16 +257,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 color: Color.fromARGB(255, 241, 235, 179),
               ),
               child: const Center(
-
-                child: Text('TEST Online Store',
-                    style: TextStyle(
-                        fontSize: 18)
-                    ),
+                child:
+                    Text('TEST Online Store', style: TextStyle(fontSize: 18)),
               ),
             ),
             const Divider(
-              color: Colors.grey, // Customize color
-              thickness: 1, // Line thickness
+              color: Colors.grey, 
+              thickness: 1, 
             ),
             const Align(
                 alignment: Alignment.centerLeft,
@@ -337,7 +274,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
             const SizedBox(height: 20.0),
             const Row(
               children: [
-                // Image(image: AssetImage('cup.png'),height: 20.0,width: 20.0),
                 Text('Cup Set', style: TextStyle(fontWeight: FontWeight.bold)),
                 SizedBox(width: 10),
                 Text('Rs 600')
@@ -346,40 +282,47 @@ class _CheckoutPageState extends State<CheckoutPage> {
             const SizedBox(height: 20.0),
             const Row(
               children: [
-                // Image(image: AssetImage('cup.png'),height: 20.0,width: 20.0),
                 Text('Speaker', style: TextStyle(fontWeight: FontWeight.bold)),
                 SizedBox(width: 10),
                 Text('Rs 400')
               ],
             ),
-            const SizedBox(height: 20.0),
+             SizedBox(height: 20.0),
             Container(
-              height: 30,
+              height: 60,
               decoration: const BoxDecoration(color: Colors.grey),
-              child: const Row(
+              child:  Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
-                  SizedBox(width: 10),
-                  Spacer(),
-                  Text('Rs 1000')
+               const  Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
+                  SizedBox(
+                    width: 90 ,
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Total',
+                      ),
+                      keyboardType: TextInputType.number,
+                      controller: _amountController,
+                    ),
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 18.0),
-          Row(
-            children: [
-              Spacer(),
-              Container(
-                height: 70,
-                width: 110,
-                child: WebViewWidget(
-                controller: _controller,  
+            Row(
+              children: [
+                Spacer(),
+                Container(
+                  height: 70,
+                  width: 110,
+                  child: WebViewWidget(
+                    controller: _controller,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      )
-    );
+              ],
+            ),
+          ],
+        ));
   }
 }
