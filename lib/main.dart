@@ -99,7 +99,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         websiteDomain: "http://localhost:3000",
         price: "1000",  // Replace with your dynamic price calculation
         businessName: "OneStop Shopping - Kathmandu",
-        imageUrl: "IMAGE_URL",
+        imageUrl: "https://citytech.global/wp-content/themes/yootheme/cache/96/citytech-logo-96074056.png",
         currency: "NPR",
         prefill: {
           name: true,
@@ -119,7 +119,21 @@ class _CheckoutPageState extends State<CheckoutPage> {
           failUrl: "https://www.store.com/fail.html"
         },
         themeColor: "#5662FF",
-        orderInformationUI: "<p>Order details here</p>",
+     orderInformationUI: \`
+          <div style='display: flex; align-items: center; margin-bottom: 10px;'>
+            <img style='max-width: 50px; margin-right: 10px;' src='https://media.istockphoto.com/id/821282266/photo/white-mug-isolated.jpg?s=2048x2048&w=is&k=20&c=aMUoxLBq_4VOE5HbYpWebboQNerQzoH4ASAiFjk0R3g=' alt='Cup'>
+            <div>
+              <p>Cups</p>
+              <span>Rs 600</span>
+            </div>
+            <br>
+          </div>
+              <div style='display: flex; align-items: center; margin-bottom: 10px;'>
+            <img style='max-width: 50px; margin-right: 10px;' src='https://www.artis.in/cdn/shop/products/1_f5b3377c-c870-420f-bc6a-5cd4b3a5a7c7.jpg?v=1653639993' alt='Speaker'>
+            <div>
+              <p>Speaker</p>
+              <span>Rs 400</span>
+            </div>\`,
         // Handle success response
         onSuccess: (response) => {
           Toaster.postMessage("success");  // No need for window.onload here
@@ -210,6 +224,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 errorType: ${error.errorType}
                 isForMainFrame: ${error.isForMainFrame}
                 ''');
+                Text('code: -6 description: net::ERR_CONNECTION_REFUSED, errorType: WebResourceErrorType.connect, isForMainFrame: false');
         },
         onHttpError: (HttpResponseError error) {
           log('Error occurred on page: ${error.response?.statusCode}');
@@ -271,7 +286,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
               child: const Center(
                 child:
-                    Text('asd Online Store', style: TextStyle(fontSize: 18)),
+                    Text('TEST Online Store', style: TextStyle(fontSize: 18)),
               ),
             ),
             const Divider(
