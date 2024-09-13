@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bundle_js/constants.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
 class WebViewExample extends StatefulWidget {
@@ -11,6 +12,7 @@ class WebViewExample extends StatefulWidget {
 
 class _WebViewExampleState extends State<WebViewExample> {
   late WebViewControllerPlus _controller;
+  bool _isLoading = false;
   final BUNDLE_URL =
       'https://minio.finpos.global/getpay-cdn/webcheckout/bundle.js';
 
@@ -41,18 +43,22 @@ class _WebViewExampleState extends State<WebViewExample> {
           },
         ),
       )
-      ..loadHtmlString(htmlContent, baseUrl: 'http://localhost:3000')
+      ..loadHtmlString(htmlContent, baseUrl: Constants.EXPO_PUBLIC_WEBSITE_DOMAIN)
       // ..clearLocalStorage()
       // ..clearCache()
       ..setNavigationDelegate(NavigationDelegate(
         onProgress: (int progress) {
           log('WebView is loading (progress : $progress%)');
+          _isLoading =true;     
         },
+
         onPageStarted: (String url) {
           log('Page started loading: $url');
+             _isLoading =true;  
         },
         onPageFinished: (String url) async {
           log('Page finished loading: $url');
+             _isLoading =false; 
         },
         onWebResourceError: (WebResourceError error) {
           log('''
@@ -65,6 +71,7 @@ class _WebViewExampleState extends State<WebViewExample> {
         },
         onHttpError: (HttpResponseError error) {
           log('Error occurred on page: ${error.response?.statusCode}');
+          Text('code: -6 description: net::ERR_CONNECTION_REFUSED, errorType: WebResourceErrorType.connect, isForMainFrame: false');
         },
         onNavigationRequest: (NavigationRequest request) {
           if (request.url.startsWith('https://') ||
@@ -96,7 +103,7 @@ class _WebViewExampleState extends State<WebViewExample> {
       appBar: AppBar(
         title: const Text('GetPay Checkout'),
       ),
-      body: WebViewWidget(
+      body:WebViewWidget(
         controller: _controller,
       ),
     );

@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bundle_js/payment.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
+import 'constants.dart' as Constants;
 
 void main() {
   runApp(MyApp());
@@ -34,6 +35,7 @@ class CheckoutPage extends StatefulWidget {
 class _CheckoutPageState extends State<CheckoutPage> {
   late WebViewControllerPlus _controller;
  static TextEditingController _amountController = TextEditingController();
+  // late AnimationController _animationController;
 
   @override
   void dispose() {
@@ -49,13 +51,21 @@ class _CheckoutPageState extends State<CheckoutPage> {
   @override
   void initState() {
     super.initState();
+    // _animationController = AnimationController(
+    //   /// [AnimationController]s can be created with `vsync: this` because of
+    //   /// [TickerProviderStateMixin].
+    //   vsync: this,
+    //   duration: const Duration(seconds: 5),
+    // )..addListener(() {
+    //     setState(() {});
+    //   });
    htmlContent = '''
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/>
     <title>Your Business Title</title>
-    <script defer="defer" src="https://minio.finpos.global/getpay-cdn/webcheckout/bundle.js"></script>
+    <script defer="defer" src="${Constants.Constants.EXPO_PUBLIC_BUNDLE_URL}"></script>
     <style>
       #checkout-btn {
           display: block;
@@ -93,13 +103,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
           city: "Kathmandu",
           address: "Chabahil",
         },
-        papInfo: "eyJpbnN0aXR1dGlvbklkIjoiMDAwIiwibWlkIjoiMTIxMjEyMTIxMjEyMTIxIiwidGlkIjoiMTIzNDU2NzgifQ==",
-        oprKey: "4fa4c6b9-3f91-43e5-9b4f-319f68187ba5",
-        insKey: "000",
-        websiteDomain: "http://localhost:3000",
+        papInfo: "${Constants.Constants.EXPO_PUBLIC_PAP_INFO}",
+        oprKey: "${Constants.Constants.EXPO_PUBLIC_OPR_KEY}",
+        insKey: "${Constants.Constants.EXPO_PUBLIC_INS_KEY}",
+        websiteDomain: "${Constants.Constants.EXPO_PUBLIC_WEBSITE_DOMAIN}",
         price: "1000",  // Replace with your dynamic price calculation
-        businessName: "OneStop Shopping - Kathmandu",
-        imageUrl: "https://citytech.global/wp-content/themes/yootheme/cache/96/citytech-logo-96074056.png",
+        businessName: "${Constants.Constants.EXPO_PUBLIC_BUSINESS_NAME}",
+        imageUrl: "${Constants.Constants.EXPO_PUBLIC_LOGO_URL}",
         currency: "NPR",
         prefill: {
           name: true,
@@ -115,8 +125,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
           state: true
         },
         callbackUrl: {
-          successUrl: "https://citytech.global/",
-          failUrl: "https://www.store.com/fail.html"
+          successUrl: "${Constants.Constants.EXPO_PUBLIC_SUCCESS_URL}",
+          failUrl: "${Constants.Constants.EXPO_PUBLIC_FAIL_URL}"
         },
         themeColor: "#5662FF",
      orderInformationUI: \`
