@@ -118,7 +118,7 @@ Step 2: Create a CheckoutPage Class
         themeColor: "#5662FF",
      orderInformationUI: \`
           <div style='display: flex; align-items: center; margin-bottom: 10px;'>
-            <img style='max-width: 50px; margin-right: 10px;' src='https://media.istockphoto.com/id/821282266/photo/white-mug-isolated.jpg?s=2048x2048&w=is&k=20&c=aMUoxLBq_4VOE5HbYpWebboQNerQzoH4ASAiFjk0R3g=' alt='Cup'>
+            <img style='max-width: 50px; margin-right: 10px;' src='{item image url}' alt='Cup'>
             <div>
               <p>Cups</p>
               <span>Rs 600</span>
@@ -126,7 +126,7 @@ Step 2: Create a CheckoutPage Class
             <br>
           </div>
               <div style='display: flex; align-items: center; margin-bottom: 10px;'>
-            <img style='max-width: 50px; margin-right: 10px;' src='https://www.artis.in/cdn/shop/products/1_f5b3377c-c870-420f-bc6a-5cd4b3a5a7c7.jpg?v=1653639993' alt='Speaker'>
+            <img style='max-width: 50px; margin-right: 10px;' src='{item image url}' alt='Speaker'>
             <div>
               <p>Speaker</p>
               <span>Rs 400</span>
