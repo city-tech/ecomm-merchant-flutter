@@ -13,8 +13,7 @@ class WebViewExample extends StatefulWidget {
 class _WebViewExampleState extends State<WebViewExample> {
   late WebViewControllerPlus _controller;
   bool _isLoading = false;
-  final BUNDLE_URL =
-      'https://minio.finpos.global/getpay-cdn/webcheckout/bundle.js';
+  // final BUNDLE_URL = '${Constants.EXPO_PUBLIC_BUNDLE_URL}';
 
   final String htmlContent = '''
     <html lang="en">
@@ -22,7 +21,7 @@ class _WebViewExampleState extends State<WebViewExample> {
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/>
         <title>Your Business Title</title>
-        <script defer="defer" src="https://minio.finpos.global/getpay-cdn/webcheckout/bundle.js"></script>
+        <script defer="defer" src="${Constants.EXPO_PUBLIC_BUNDLE_URL}"></script>
       </head>
       <body>
         <div id="checkout"></div>
@@ -43,22 +42,22 @@ class _WebViewExampleState extends State<WebViewExample> {
           },
         ),
       )
-      ..loadHtmlString(htmlContent, baseUrl: Constants.EXPO_PUBLIC_WEBSITE_DOMAIN)
+      ..loadHtmlString(htmlContent,
+          baseUrl: Constants.EXPO_PUBLIC_WEBSITE_DOMAIN)
       // ..clearLocalStorage()
       // ..clearCache()
       ..setNavigationDelegate(NavigationDelegate(
         onProgress: (int progress) {
           log('WebView is loading (progress : $progress%)');
-          _isLoading =true;     
+          _isLoading = true;
         },
-
         onPageStarted: (String url) {
           log('Page started loading: $url');
-             _isLoading =true;  
+          _isLoading = true;
         },
         onPageFinished: (String url) async {
           log('Page finished loading: $url');
-             _isLoading =false; 
+          _isLoading = false;
         },
         onWebResourceError: (WebResourceError error) {
           log('''
@@ -71,7 +70,8 @@ class _WebViewExampleState extends State<WebViewExample> {
         },
         onHttpError: (HttpResponseError error) {
           log('Error occurred on page: ${error.response?.statusCode}');
-          Text('code: -6 description: net::ERR_CONNECTION_REFUSED, errorType: WebResourceErrorType.connect, isForMainFrame: false');
+          Text(
+              'code: -6 description: net::ERR_CONNECTION_REFUSED, errorType: WebResourceErrorType.connect, isForMainFrame: false');
         },
         onNavigationRequest: (NavigationRequest request) {
           if (request.url.startsWith('https://') ||
@@ -103,7 +103,7 @@ class _WebViewExampleState extends State<WebViewExample> {
       appBar: AppBar(
         title: const Text('GetPay Checkout'),
       ),
-      body:WebViewWidget(
+      body: WebViewWidget(
         controller: _controller,
       ),
     );

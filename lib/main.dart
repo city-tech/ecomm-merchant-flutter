@@ -34,12 +34,11 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   late WebViewControllerPlus _controller;
- static TextEditingController _amountController = TextEditingController();
+  static TextEditingController _amountController = TextEditingController();
   // late AnimationController _animationController;
 
   @override
   void dispose() {
-
     _controller.removeJavaScriptChannel(
       'Toaster',
     );
@@ -47,19 +46,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   // Dynamic HTML content
-   String htmlContent = "";
+  String htmlContent = "";
   @override
   void initState() {
     super.initState();
-    // _animationController = AnimationController(
-    //   /// [AnimationController]s can be created with `vsync: this` because of
-    //   /// [TickerProviderStateMixin].
-    //   vsync: this,
-    //   duration: const Duration(seconds: 5),
-    // )..addListener(() {
-    //     setState(() {});
-    //   });
-   htmlContent = '''
+
+    htmlContent = '''
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -107,7 +99,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         oprKey: "${Constants.Constants.EXPO_PUBLIC_OPR_KEY}",
         insKey: "${Constants.Constants.EXPO_PUBLIC_INS_KEY}",
         websiteDomain: "${Constants.Constants.EXPO_PUBLIC_WEBSITE_DOMAIN}",
-        price: "1000",  // Replace with your dynamic price calculation
+        price: 1000,  // Replace with your dynamic price calculation
         businessName: "${Constants.Constants.EXPO_PUBLIC_BUSINESS_NAME}",
         imageUrl: "${Constants.Constants.EXPO_PUBLIC_LOGO_URL}",
         currency: "NPR",
@@ -143,7 +135,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             <div>
               <p>Speaker</p>
               <span>Rs 400</span>
-            </div>\`,
+            </div>`,
         // Handle success response
         onSuccess: (response) => {
           Toaster.postMessage("success");  // No need for window.onload here
@@ -166,55 +158,41 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
         // Initialize GetPay with the given options
         const getPay = new GetPay(options);
+        options.baseUrl = "${Constants.Constants.EXPO_PUBLIC_BASE_URL}"
         getPay.initialize();
+    
       };
     </script>
   </body>
 </html>
 
   ''';
-
-    _enableLocalStorageAccess();
-  }
-
-
-
-  Future<void> _enableLocalStorageAccess() async {
-    if (_controller != null) {
-      await _controller!.runJavaScriptReturningResult('''
-        try {
-          window.localStorage.setItem('test', 'value');
-          window.localStorage.getItem('test');
-        } catch (e) {
-          console.error('Failed to access local storage:', e);
-        }
-      ''');
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-  }
-
-     int counter1 = 1;
-     int _counter2 = 1;
-
-     int totalCupPrice = 600;
-     int totalSpeakerPrice = 400;
-
-     bool isCup = false;
-     bool isSpeaker = false;
-
-  @override
-  Widget build(BuildContext context) {
     _controller = WebViewControllerPlus(
       onPermissionRequest: (request) {
         request.platform.grant();
       },
     )
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..addJavaScriptChannel(
+        'Toaster',
+        onMessageReceived: (JavaScriptMessage message) {
+          print('message trigged' + message.toString());
+          if (message.message == "success") {
+            print('buton clicked');
+
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => WebViewExample(),
+              ),
+            );
+          } else {
+            print(message.message.toString());
+          }
+        },
+      )
       ..setJavaScriptMode(JavaScriptMode.unrestricted).then((value) async {})
-      ..loadHtmlString(htmlContent, baseUrl: 'http://localhost:3000')
+      ..loadHtmlString(htmlContent,
+          baseUrl: '${Constants.Constants.EXPO_PUBLIC_WEBSITE_DOMAIN}')
       ..setNavigationDelegate(NavigationDelegate(
         onProgress: (int progress) {
           log('WebView is loading (progress : $progress%)');
@@ -234,7 +212,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 errorType: ${error.errorType}
                 isForMainFrame: ${error.isForMainFrame}
                 ''');
-                Text('code: -6 description: net::ERR_CONNECTION_REFUSED, errorType: WebResourceErrorType.connect, isForMainFrame: false');
+          Text(
+              'code: -6 description: net::ERR_CONNECTION_REFUSED, errorType: WebResourceErrorType.connect, isForMainFrame: false');
         },
         onHttpError: (HttpResponseError error) {
           log('Error occurred on page: ${error.response?.statusCode}');
@@ -250,30 +229,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
           }
         },
       ))
-      ..addJavaScriptChannel(
-        'Toaster',
-        onMessageReceived: (JavaScriptMessage message) {
-          print('message trigged' + message.toString());
-          if (message.message == "success") {
-            print('buton clicked');
-
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => WebViewExample(),
-              ),
-            );
-          } else {
-            print(message.message.toString());
-          }
-        },
-      )
       ..setNavigationDelegate(
         NavigationDelegate(
-          onProgress: (int progress) {
-          },
+          onProgress: (int progress) {},
           onPageStarted: (String url) {},
           onPageFinished: (String url) {},
-          onWebResourceError: (WebResourceError error) {},
+          onWebResourceError: (WebResourceError error) {
+            log("Error === $error");
+          },
           onNavigationRequest: (NavigationRequest request) {
             // This is equivalent to originWhitelist={['*']}
             // It allows navigation to all origins
@@ -281,7 +244,47 @@ class _CheckoutPageState extends State<CheckoutPage> {
           },
         ),
       );
+    // _animationController = AnimationController(
+    //   /// [AnimationController]s can be created with `vsync: this` because of
+    //   /// [TickerProviderStateMixin].
+    //   vsync: this,
+    //   duration: const Duration(seconds: 5),
+    // )..addListener(() {
+    //     setState(() {});
+    //   });
 
+    _enableLocalStorageAccess();
+  }
+
+  Future<void> _enableLocalStorageAccess() async {
+    // if (_controller != null) {
+    await _controller.runJavaScriptReturningResult('''
+        try {
+          window.localStorage.setItem('test', 'value');
+          window.localStorage.getItem('test');
+        } catch (e) {
+          console.error('Failed to access local storage:', e);
+        }
+      ''');
+    // }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
+
+  int counter1 = 1;
+  int _counter2 = 1;
+
+  int totalCupPrice = 600;
+  int totalSpeakerPrice = 400;
+
+  bool isCup = false;
+  bool isSpeaker = false;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           title: Text('Checkout Page'),
@@ -290,7 +293,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
           children: [
             Container(
               height: 60.0,
-              
               decoration: const BoxDecoration(
                 color: Color.fromARGB(255, 241, 235, 179),
               ),
@@ -300,8 +302,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
             ),
             const Divider(
-              color: Colors.grey, 
-              thickness: 1, 
+              color: Colors.grey,
+              thickness: 1,
             ),
             const Align(
                 alignment: Alignment.centerLeft,
@@ -311,67 +313,57 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 )),
             const SizedBox(height: 20.0),
             ListTile(
-              
               leading: Container(
-               
-                child:  Image.asset('assets/cup.png'),
+                child: Image.asset('assets/cup.png'),
                 height: 60,
-              width: 60,
+                width: 60,
               ),
-                    
-               title: Text('Cup Set', style: TextStyle(fontWeight: FontWeight.bold)),
-            
-                subtitle: Column(
-                       mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Rs 600'),
-                    Divider(),
-                    Text("Total: ${calculateTotalEachCup(count: counter1,price: 600)}")
-
-                  ],
-                ),
-                trailing: Container(
-                  height: 100,
-                  child: itemCounter1()),
-            
+              title: Text('Cup Set',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Rs 600'),
+                  Divider(),
+                  Text(
+                      "Total: ${calculateTotalEachCup(count: counter1, price: 600)}")
+                ],
+              ),
+              trailing: Container(height: 100, child: itemCounter1()),
             ),
-              ListTile(
+            ListTile(
               leading: Container(
-                  child:  Image.asset('assets/speaker.png'),
-              
+                child: Image.asset('assets/speaker.png'),
                 height: 60,
-              width: 60,
+                width: 60,
               ),
-        
-               title: Text('Speaker', style: TextStyle(fontWeight: FontWeight.bold)),
-            
-                subtitle: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Rs 400'),
-                                 Divider(),
-                    Text("Total: ${calculateTotalEachSpeaker(count: _counter2,price: 400)}")
-                  ],
-                ),
-                trailing: itemCounter2(),
-            
+              title: Text('Speaker',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Rs 400'),
+                  Divider(),
+                  Text(
+                      "Total: ${calculateTotalEachSpeaker(count: _counter2, price: 400)}")
+                ],
+              ),
+              trailing: itemCounter2(),
             ),
             const SizedBox(height: 20.0),
-      
-             SizedBox(height: 20.0),
+            SizedBox(height: 20.0),
             Container(
               height: 60,
               decoration: const BoxDecoration(color: Colors.grey),
-              child:  Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-               const  Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text('Total',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                   SizedBox(
-                    width: 90 ,
-                    child: Text(calculateGrandTotal().toString())
-                  ),
+                      width: 90, child: Text(calculateGrandTotal().toString())),
                 ],
               ),
             ),
@@ -392,86 +384,88 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ));
   }
 
- Widget itemCounter1(){
-  return Container(
-    width: 140,
-    height: 100,
-    child: Row(children: [
-      Card(child: IconButton(onPressed: (){
-        setState(() {
-          counter1+=1;
-        });
-      }, icon: Icon(Icons.add))),
-      Text(counter1.toString()),
-         Card(child: IconButton(onPressed: (){
-          setState(() {
-            if(counter1 >1){
-                  counter1 -=1;
-            }
-          });
-     
-         }, icon: Icon(Icons.remove)))
-    ],),
-  );
-
+  Widget itemCounter1() {
+    return Container(
+      width: 140,
+      height: 100,
+      child: Row(
+        children: [
+          Card(
+              child: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      counter1 += 1;
+                    });
+                  },
+                  icon: Icon(Icons.add))),
+          Text(counter1.toString()),
+          Card(
+              child: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      if (counter1 > 1) {
+                        counter1 -= 1;
+                      }
+                    });
+                  },
+                  icon: Icon(Icons.remove)))
+        ],
+      ),
+    );
   }
 
   int totalGrand = 1000;
-int calculateGrandTotal(){
-  
-totalGrand = totalCupPrice + totalSpeakerPrice;
-  return totalGrand;
-
-
-}
-
-
-
-
-
-  int calculateTotalEachCup({required int count,required int price,}){
-   int totalEach  = price * count;
-  
-    totalCupPrice = totalEach;
-   
-   return totalEach;
-
-
+  int calculateGrandTotal() {
+    totalGrand = totalCupPrice + totalSpeakerPrice;
+    return totalGrand;
   }
 
+  int calculateTotalEachCup({
+    required int count,
+    required int price,
+  }) {
+    int totalEach = price * count;
 
+    totalCupPrice = totalEach;
 
-  int calculateTotalEachSpeaker({required int count,required int price}){
-   int totalEach  = price * count;
+    return totalEach;
+  }
+
+  int calculateTotalEachSpeaker({required int count, required int price}) {
+    int totalEach = price * count;
 
     totalSpeakerPrice = totalEach;
-  
-   return totalEach;
 
-
+    return totalEach;
   }
 
- Widget itemCounter2(){
-  return Container(
-    width: 150,
-    height: 100,
-    child: Row(children: [
-      Card(child: IconButton(onPressed: (){
-        setState(() {
-          _counter2+=1;
-        });
-      }, icon: Icon(Icons.add))),
-      Text(_counter2.toString()),
-         Card(child: IconButton(onPressed: (){
-          setState(() {
-            if(_counter2 >1){
-                  _counter2 -=1;
-            }
-          });
-     
-         }, icon: Icon(Icons.remove)))
-    ],),
-  );
-
+  Widget itemCounter2() {
+    return Container(
+      width: 150,
+      height: 100,
+      child: Row(
+        children: [
+          Card(
+              child: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _counter2 += 1;
+                    });
+                  },
+                  icon: Icon(Icons.add))),
+          Text(_counter2.toString()),
+          Card(
+              child: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      if (_counter2 > 1) {
+                        _counter2 -= 1;
+                      }
+                    });
+                  },
+                  icon: Icon(Icons.remove)))
+        ],
+      ),
+    );
   }
 }
