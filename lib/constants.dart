@@ -12,8 +12,8 @@ class Constants {
   static const String EXPO_PUBLIC_LOGO_URL =
       "https://citytech.global/wp-content/themes/yootheme/cache/96/citytech-logo-96074056.png";
   static const String EXPO_PUBLIC_SUCCESS_URL =
-      "https://www.store.com/success.html";
-  static const String EXPO_PUBLIC_FAIL_URL = "https://www.store.com/fail.html";
+      "http://localhost:3000/success.html";
+  static const String EXPO_PUBLIC_FAIL_URL = "http://localhost:3000/fail.html";
   static const String EXPO_PUBLIC_BASE_URL =
       "https://getpay-qa.finpos.global/ecom-gateway/v1/secure-merchant/transactions";
 }
