@@ -197,10 +197,10 @@
       "name": "ecomm_merchant_demo",
       "rootUri": "../",
       "packageUri": "lib/",
-      "languageVersion": "3.7"
+      "languageVersion": "3.6"
     }
   ],
-  "generated": "2025-04-11T10:30:49.307131Z",
+  "generated": "2025-04-15T16:37:19.826289Z",
   "generator": "pub",
   "generatorVersion": "3.7.2",
   "flutterRoot": "file:///opt/homebrew/Caskroom/flutter/3.19.4/flutter",
