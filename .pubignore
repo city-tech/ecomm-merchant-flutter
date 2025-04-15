@@ -1,0 +1,50 @@
+# Exclude build artifacts
+build/
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+
+# IDE and editor settings
+.idea/
+.vscode/
+*.iml
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Dependency override
+dependency_overrides.yaml
+
+# Logs, temporary files
+*.log
+*.tmp
+*.swp
+
+# Firebase/generated files (optional)
+firebase_options.dart
+
+# Fastlane (for CI/CD)
+fastlane/report.xml
+fastlane/screenshots/
+fastlane/Preview.html
+
+# Coverage reports
+coverage/
+
+# Android and iOS build outputs (redundant but safe)
+android/app/build/
+ios/Pods/
+ios/.symlinks
+macos/Pods/
+macos/.symlinks
+
+# Linux/Windows/Mac ephemeral
+linux/flutter/ephemeral/
+windows/flutter/ephemeral/
+macos/flutter/ephemeral/
+
+# If using screenshots or documentation that should stay local
+screenshots/
+docs/generated/
