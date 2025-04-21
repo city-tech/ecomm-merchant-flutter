@@ -39,85 +39,88 @@ class _CheckoutPage extends State<CheckoutPage> {
   }
 
   void _initializeCheckoutWbController() {
-    _checkoutWbController =
-        WebViewController(
-            onPermissionRequest: (request) {
-              request.platform.grant();
-            },
-          )
-          ..setJavaScriptMode(JavaScriptMode.unrestricted)
-          ..addJavaScriptChannel(
-            'Toaster',
-            onMessageReceived: (JavaScriptMessage message) {
-              debugPrint('Message Received $message');
-              if (message.message.toLowerCase() == "success") {
-                debugPrint('SUCCESS MESSAGE RECEIVED');
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => PaymentPage(_checkoutParameters),
-                  ),
-                );
-              } else {
-                _checkoutParameters.onFailure(message.message);
-              }
-            },
-          )
-          ..loadHtmlString(
-            CheckoutHtml().checkoutWithParameters(
-              _checkoutParameters.merchantName,
-              _checkoutParameters.papInfo,
-              _checkoutParameters.secretKey,
-              _checkoutParameters.institutionKey != null
-                  ? _checkoutParameters.institutionKey!
-                  : '',
-              _checkoutParameters.websiteDomain != null
-                  ? _checkoutParameters.websiteDomain!
-                  : Constants.EXPO_PUBLIC_WEBSITE_DOMAIN,
-              _checkoutParameters.amount,
-              _checkoutParameters.businessName,
-              _checkoutParameters.logoUrl,
-              _checkoutParameters.bank,
-              _checkoutParameters.requestNumber,
-              _checkoutParameters.currency,
-            ),
-            // CheckoutHtml.checkoutScript,
-            baseUrl: Constants.EXPO_PUBLIC_WEBSITE_DOMAIN,
-          )
-          ..setNavigationDelegate(
-            NavigationDelegate(
-              onProgress: (int progress) {
-                debugPrint('WebView is loading (Progress == $progress)');
-              },
-              onPageStarted: (String url) {
-                debugPrint('PAGE WITH URL $url STARTED');
-              },
-              onPageFinished: (String url) {
-                debugPrint('PAGE WITH URL $url FINISHED');
-              },
-              onWebResourceError: (WebResourceError error) {
-                String message =
-                    'Page Load Error: Code = ${error.errorCode}, Description = ${error.description}';
-                debugPrint(message);
-                _checkoutParameters.onFailure(message);
-              },
-              onHttpError: (HttpResponseError error) {
-                String message =
-                    'Page Load HTTP Error: Code = ${error.response?.statusCode}';
-                debugPrint(message);
-                _checkoutParameters.onFailure(message);
-              },
-              onNavigationRequest: (NavigationRequest request) {
-                if (request.url.startsWith('https://') ||
-                    request.url.startsWith('http://')) {
-                  debugPrint('Allowing Navigation: URL ${request.url}');
-                  return NavigationDecision.navigate;
-                } else {
-                  debugPrint('Preventing Navigation: URL ${request.url}');
-                  return NavigationDecision.prevent;
-                }
-              },
-            ),
-          );
+    _checkoutWbController = WebViewController(
+      onPermissionRequest: (request) {
+        request.platform.grant();
+      },
+    )
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..addJavaScriptChannel(
+        'Toaster',
+        onMessageReceived: (JavaScriptMessage message) {
+          debugPrint('Message Received $message');
+          if (message.message.toLowerCase() == "success") {
+            debugPrint('SUCCESS MESSAGE RECEIVED');
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => PaymentPage(_checkoutParameters),
+              ),
+            );
+          } else {
+            _checkoutParameters.onFailure(message.message);
+          }
+        },
+      )
+      ..loadHtmlString(
+        CheckoutHtml().checkoutWithParameters(
+          _checkoutParameters.merchantName,
+          _checkoutParameters.papInfo,
+          _checkoutParameters.secretKey,
+          _checkoutParameters.institutionKey != null
+              ? _checkoutParameters.institutionKey!
+              : '',
+          _checkoutParameters.websiteDomain != null
+              ? _checkoutParameters.websiteDomain!
+              : Constants.EXPO_PUBLIC_WEBSITE_DOMAIN,
+          _checkoutParameters.amount,
+          _checkoutParameters.businessName,
+          _checkoutParameters.logoUrl,
+          _checkoutParameters.bank,
+          _checkoutParameters.requestNumber,
+          _checkoutParameters.currency,
+        ),
+        // CheckoutHtml.checkoutScript,
+        baseUrl: Constants.EXPO_PUBLIC_WEBSITE_DOMAIN,
+      )
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            debugPrint('WebView is loading (Progress == $progress)');
+          },
+          onPageStarted: (String url) {
+            debugPrint('PAGE WITH URL $url STARTED');
+          },
+          onPageFinished: (String url) {
+            debugPrint('PAGE WITH URL $url FINISHED');
+          },
+          onWebResourceError: (WebResourceError error) {
+            String message =
+                'Page Load Error: Code = ${error.errorCode}, Description = ${error.description}';
+            debugPrint(message);
+            if (error.url?.contains("localhost") == false) {
+              _checkoutParameters.onFailure(message);
+            }
+          },
+          onHttpError: (HttpResponseError error) {
+            String message =
+                'Page Load HTTP Error: Code = ${error.response?.statusCode}';
+            debugPrint(message);
+            if (error.request?.uri.toString().contains("localhost") == false) {
+              _checkoutParameters.onFailure(message);
+            }
+          },
+          onNavigationRequest: (NavigationRequest request) {
+            if (request.url.startsWith('https://') ||
+                request.url.startsWith('http://')) {
+              debugPrint('Allowing Navigation: URL ${request.url}');
+              return NavigationDecision.navigate;
+            } else {
+              debugPrint('Preventing Navigation: URL ${request.url}');
+              return NavigationDecision.prevent;
+            }
+          },
+        ),
+      );
   }
 
   @override

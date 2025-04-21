@@ -41,87 +41,92 @@ class _PaymentPage extends State<PaymentPage> {
   }
 
   void _initializePaymentWbController() {
-    _paymentWbController =
-        WebViewController()
-          ..setJavaScriptMode(JavaScriptMode.unrestricted)
-          ..setNavigationDelegate(
-            NavigationDelegate(
-              onPageFinished: (_) => _enableLocalStorageAccess(),
-              onWebResourceError: (WebResourceError error) {
-                String message = 'WebView error: ${error.description}';
-                debugPrint(message);
-                _checkoutParameters.onFailure(message);
-              },
-            ),
-          )
-          ..addJavaScriptChannel(
-            'Toaster',
-            onMessageReceived: (JavaScriptMessage message) {
-              if (message.message.toLowerCase() == "success") {
-                _checkoutParameters.onSuccess(message.message);
-              } else {
-                _checkoutParameters.onFailure(message.message);
-              }
-            },
-          )
-          ..loadHtmlString(
-            CheckoutHtml.paymentScript,
-            baseUrl: Constants.EXPO_PUBLIC_WEBSITE_DOMAIN,
-          )
-          ..setNavigationDelegate(
-            NavigationDelegate(
-              onProgress: (int progress) {
-                debugPrint('WebView is loading (progress : $progress%)');
-              },
-              onPageStarted: (String url) {
-                debugPrint('Page started loading: $url');
-              },
-              onPageFinished: (String url) async {
-                debugPrint('Page finished loading: $url');
-              },
-              onWebResourceError: (WebResourceError error) {
-                debugPrint('''
+    _paymentWbController = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (_) => _enableLocalStorageAccess(),
+          onWebResourceError: (WebResourceError error) {
+            String message = 'WebView error: ${error.description}';
+            debugPrint(message);
+            if (error.url?.contains("localhost") == false) {
+              _checkoutParameters.onFailure(message);
+            }
+          },
+        ),
+      )
+      ..addJavaScriptChannel(
+        'Toaster',
+        onMessageReceived: (JavaScriptMessage message) {
+          if (message.message.toLowerCase() == "success") {
+            _checkoutParameters.onSuccess(message.message);
+          } else {
+            _checkoutParameters.onFailure(message.message);
+          }
+        },
+      )
+      ..loadHtmlString(
+        CheckoutHtml.paymentScript,
+        baseUrl: Constants.EXPO_PUBLIC_WEBSITE_DOMAIN,
+      )
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            debugPrint('WebView is loading (progress : $progress%)');
+          },
+          onPageStarted: (String url) {
+            debugPrint('Page started loading: $url');
+          },
+          onPageFinished: (String url) async {
+            debugPrint('Page finished loading: $url');
+          },
+          onWebResourceError: (WebResourceError error) {
+            debugPrint('''
                 Page resource error:
                 code: ${error.errorCode}
                 description: ${error.description}
                 errorType: ${error.errorType}
                 isForMainFrame: ${error.isForMainFrame}
                 ''');
-                _checkoutParameters.onFailure(
-                  error.errorCode.toString() + error.description,
+            if (error.url?.contains("localhost") == false) {
+              _checkoutParameters.onFailure(
+                error.errorCode.toString() + error.description,
+              );
+            }
+          },
+          onHttpError: (HttpResponseError error) {
+            debugPrint(
+              'Error occurred on page: ${error.response?.statusCode}',
+            );
+            if (error.request?.uri.toString().contains("localhost") == false) {
+              _checkoutParameters.onFailure(
+                'Error Code: ' + '${error.response?.statusCode}',
+              );
+            }
+          },
+          onNavigationRequest: (NavigationRequest request) {
+            if (request.url.startsWith('https://') ||
+                request.url.startsWith('http://')) {
+              debugPrint('Allowing navigation to: ${request.url}');
+              if (request.url.contains('success')) {
+                _paymentWbController?.loadHtmlString(
+                  SuccessHtml.content,
+                  baseUrl: request.url,
                 );
-              },
-              onHttpError: (HttpResponseError error) {
-                debugPrint(
-                  'Error occurred on page: ${error.response?.statusCode}',
+              } else {
+                _paymentWbController?.loadHtmlString(
+                  FailureHtml.content,
+                  baseUrl: request.url,
                 );
-                _checkoutParameters.onFailure(
-                  'Error Code: ' + '${error.response?.statusCode}',
-                );
-              },
-              onNavigationRequest: (NavigationRequest request) {
-                if (request.url.startsWith('https://') ||
-                    request.url.startsWith('http://')) {
-                  debugPrint('Allowing navigation to: ${request.url}');
-                  if (request.url.contains('success')) {
-                    _paymentWbController?.loadHtmlString(
-                      SuccessHtml.content,
-                      baseUrl: request.url,
-                    );
-                  } else {
-                    _paymentWbController?.loadHtmlString(
-                      FailureHtml.content,
-                      baseUrl: request.url,
-                    );
-                  }
-                  return NavigationDecision.prevent;
-                } else {
-                  debugPrint('Blocking navigation to: ${request.url}');
-                  return NavigationDecision.prevent;
-                }
-              },
-            ),
-          );
+              }
+              return NavigationDecision.prevent;
+            } else {
+              debugPrint('Blocking navigation to: ${request.url}');
+              return NavigationDecision.prevent;
+            }
+          },
+        ),
+      );
   }
 
   Future<void> _enableLocalStorageAccess() async {
