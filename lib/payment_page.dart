@@ -1,8 +1,6 @@
-import 'package:ecomm_merchant_demo/checkout_page.dart';
 import 'package:ecomm_merchant_demo/checkout_parameters.dart';
 import 'package:ecomm_merchant_demo/failure_html.dart';
 import 'package:ecomm_merchant_demo/success_html.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
