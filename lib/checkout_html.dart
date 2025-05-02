@@ -11,31 +11,9 @@ class CheckoutHtml {
     <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/>
     <title>Getpay Merchant Demo</title>
     <script defer="defer" src="https://minio.finpos.global/getpay-cdn/webcheckout/live/v2/bundle.js"></script>
-    <style>
-        #checkout-btn {
-            display: block;
-            text-align: center;
-            margin-bottom: 1em;
-            font-size: 1.25em;
-            padding: 1em;
-            cursor: pointer;
-            background-color: burlywood;
-            border-radius: .33rem;
-            border-color: var(--wp--preset--color--contrast);
-            border-width: 0;
-            color: var(--wp--preset--color--base);
-            font-family: inherit;
-            font-size: var(--wp--preset--font-size--small);
-            font-style: normal;
-            font-weight: 500;
-            line-height: inherit;
-            text-decoration: none;
-        }
-    </style>
 </head>
 <body>
-<div id="checkout" hidden></div>
-<button id="checkout-btn">Checkout</button>
+<div id="checkout"></div>
 <script type="text/javascript">
     const options = {
         userInfo: {
@@ -69,30 +47,17 @@ class CheckoutHtml {
               <p>Cups</p>
               <span>Rs 600</span>
             </div>
-            <br>
-          </div>
-              <div style='display: flex; align-items: center; margin-bottom: 10px;'>
-            <img style='max-width: 50px; margin-right: 10px;' src='https://www.artis.in/cdn/shop/products/1_f5b3377c-c870-420f-bc6a-5cd4b3a5a7c7.jpg?v=1653639993' alt='Speaker'>
-            <div>
-              <p>Speaker</p>
-              <span>Rs 400</span>
-            </div>`,
+          </div>`,
         onSuccess: (response) => {
-            Toaster.postMessage("success");  // No need for window.onload here
+            Toaster.postMessage("success");
         },
-        // Handle error response
         onError: (error) => {
-            Toaster.postMessage("error");  // No need for window.onload here
+            Toaster.postMessage("error");
         },
     };
 
-    document.getElementById('checkout-btn').onclick = function (e) {
-        if (window.Toaster && typeof window.Toaster.postMessage === 'function') {
-            window.Toaster.postMessage("success");
-        } else {
-            console.log("Toaster channel is not available.");
-        }
-
+    // Initialize automatically when page loads
+    window.onload = function() {
         const getPay = new GetPay(options);
         getPay.initialize();
     };
@@ -137,31 +102,9 @@ class CheckoutHtml {
     <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/>
     <title>$merchantName</title>
     <script defer="defer" src="https://minio.finpos.global/getpay-cdn/webcheckout/live/v2/bundle.js"></script>
-    <style>
-        #checkout-btn {
-            display: block;
-            text-align: center;
-            margin-bottom: 1em;
-            font-size: 1.25em;
-            padding: 1em;
-            cursor: pointer;
-            background-color: burlywood;
-            border-radius: .33rem;
-            border-color: var(--wp--preset--color--contrast);
-            border-width: 0;
-            color: var(--wp--preset--color--base);
-            font-family: inherit;
-            font-size: var(--wp--preset--font-size--small);
-            font-style: normal;
-            font-weight: 500;
-            line-height: inherit;
-            text-decoration: none;
-        }
-    </style>
 </head>
 <body>
-<div id="checkout" hidden></div>
-<button id="checkout-btn">Checkout</button>
+<div id="checkout"></div>
 <script type="text/javascript">
     const options = {
         userInfo: {
@@ -200,13 +143,9 @@ class CheckoutHtml {
         },
     };
 
-    document.getElementById('checkout-btn').onclick = function (e) {
-        if (window.Toaster && typeof window.Toaster.postMessage === 'function') {
-            window.Toaster.postMessage("success");
-        } else {
-            console.log("Toaster channel is not available.");
-        }
-
+    // Initialize automatically when page loads - no button click needed
+    // SDK will show its own checkout button
+    window.onload = function() {
         const getPay = new GetPay(options);
         getPay.initialize();
     };
