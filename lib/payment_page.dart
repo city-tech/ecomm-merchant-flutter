@@ -108,12 +108,12 @@ class _PaymentPage extends State<PaymentPage> {
               debugPrint('Allowing navigation to: ${request.url}');
               if (request.url.contains('success')) {
                 _paymentWbController?.loadHtmlString(
-                  SuccessHtml.content,
+                  _checkoutParameters.customSuccessHtml ?? SuccessHtml.content,
                   baseUrl: request.url,
                 );
               } else {
                 _paymentWbController?.loadHtmlString(
-                  FailureHtml.content,
+                  _checkoutParameters.customFailureHtml ?? FailureHtml.content,
                   baseUrl: request.url,
                 );
               }

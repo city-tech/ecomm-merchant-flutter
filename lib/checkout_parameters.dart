@@ -92,4 +92,7 @@ class CheckoutParameters {
   set papInfo(String value) {
     _papInfo = value;
   }
+
+  String? customSuccessHtml;
+  String? customFailureHtml;
 }

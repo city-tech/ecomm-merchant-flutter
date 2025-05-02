@@ -34,6 +34,68 @@ class MyApp extends StatelessWidget {
     checkoutParameters.bank = "QA";
     checkoutParameters.requestNumber = "1234567890";
     checkoutParameters.currency = "NPR";
+
+//commented for now, uncomment if you want to use custom succes and failure page
+    // checkoutParameters.customSuccessHtml = '''
+    //   <!DOCTYPE html>
+    //   <html lang="en">
+    //   <head>
+    //     <meta charset="UTF-8">
+    //     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    //     <title>Custom Success</title>
+    //     <style>
+    //       body { font-family: Arial; background-color: #e8f5e9; padding: 20px; }
+    //       .container { max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    //       h1 { color: #2e7d32; text-align: center; }
+    //       .btn { display: inline-block; background-color: #2e7d32; color: white; padding: 12px 24px; border-radius: 5px; text-decoration: none; margin-top: 20px; }
+    //     </style>
+    //   </head>
+    //   <body>
+    //     <div class="container">
+    //       <h1>Payment Successful!</h1>
+    //       <p>Thank you for your purchase. Your order has been confirmed.</p>
+    //       <p>Order #: <strong>${checkoutParameters.requestNumber}</strong></p>
+    //       <p>Amount: <strong>${checkoutParameters.currency} ${checkoutParameters.amount}</strong></p>
+    //       <a id="btn" class="btn">Continue</a>
+    //     </div>
+    //     <script>
+    //       document.getElementById("btn").addEventListener("click", function() {
+    //         window.Toaster.postMessage("success");
+    //       });
+    //     </script>
+    //   </body>
+    //   </html>
+    // ''';
+
+    // checkoutParameters.customFailureHtml = '''
+    //   <!DOCTYPE html>
+    //   <html lang="en">
+    //   <head>
+    //     <meta charset="UTF-8">
+    //     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    //     <title>Custom Failure</title>
+    //     <style>
+    //       body { font-family: Arial; background-color: #ffebee; padding: 20px; }
+    //       .container { max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    //       h1 { color: #c62828; text-align: center; }
+    //       .btn { display: inline-block; background-color: #c62828; color: white; padding: 12px 24px; border-radius: 5px; text-decoration: none; margin-top: 20px; }
+    //     </style>
+    //   </head>
+    //   <body>
+    //     <div class="container">
+    //       <h1>Payment Failed</h1>
+    //       <p>We couldn't process your payment. Please try again or contact support.</p>
+    //       <a id="btn" class="btn">Try Again</a>
+    //     </div>
+    //     <script>
+    //       document.getElementById("btn").addEventListener("click", function() {
+    //         window.Toaster.postMessage("error");
+    //       });
+    //     </script>
+    //   </body>
+    //   </html>
+    // ''';
+
     checkoutParameters.onSuccess = (message) {
       debugPrint('ON CHECKOUT SUCCESS $message');
     };

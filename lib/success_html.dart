@@ -95,11 +95,7 @@ class SuccessHtml {
     </div>
 
     <h1>Transaction Successful!</h1>
-    <p>Thank you for your purchase. Your transaction has been completed successfully.</p>
-    <p>You will receive an email with your order details shortly. If you have any questions or concerns, please
-        don't hesitate to contact our customer support team.</p>
-    <p>Thank you for shopping with us!</p>
-    <a id="btn" class="btn">Continue Shopping</a>
+   
 </div>
 <script>
     // Get the token from URL
