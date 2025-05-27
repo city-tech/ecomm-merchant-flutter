@@ -162,7 +162,9 @@ class CheckoutHtml {
       case "QA":
         return "https://getpay-qa.finpos.global/ecom-gateway/v1/secure-merchant/transactions";
       case "UAT":
-        return "https://getpay-uat.finpos.global/ecom-gateway/v1/secure-merchant/transactions";
+        return "https://uat-bank-getpay.nchl.com.np/ecom-web-checkout/v1/secure-merchant/transactions";
+      case "LIVE":
+        return "https://ecom-getpay.nchl.com.np/ecom-web-checkout/v1/secure-merchant/transactions";
       default:
         return "https://getpay-dev.finpos.global/ecom-gateway/v1/secure-merchant/transactions";
     }

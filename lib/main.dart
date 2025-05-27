@@ -31,9 +31,11 @@ class MyApp extends StatelessWidget {
     checkoutParameters.amount = 1200.00;
     checkoutParameters.businessName = "JPT Demo";
     checkoutParameters.logoUrl = Constants.EXPO_PUBLIC_LOGO_URL;
-    checkoutParameters.bank = "QA";
+    checkoutParameters.bank = "LIVE";
     checkoutParameters.requestNumber = "1234567890";
     checkoutParameters.currency = "NPR";
+    checkoutParameters.customSuccessHtml = Constants.EXPO_PUBLIC_SUCCESS_URL;
+    checkoutParameters.customFailureHtml = Constants.EXPO_PUBLIC_FAIL_URL;
 
 //commented for now, uncomment if you want to use custom succes and failure page
     // checkoutParameters.customSuccessHtml = '''
