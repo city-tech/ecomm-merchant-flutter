@@ -68,3 +68,6 @@ fastlane/screenshots/
 
 # Dart tool internal version tracking
 version.json
+
+# FVM Version Cache
+.fvm/

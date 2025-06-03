@@ -1,6 +1,10 @@
+import 'dart:developer';
+
 import 'package:ecomm_merchant_demo/checkout_html.dart';
 import 'package:ecomm_merchant_demo/checkout_parameters.dart';
+import 'package:ecomm_merchant_demo/failure_html.dart';
 import 'package:ecomm_merchant_demo/payment_page.dart';
+import 'package:ecomm_merchant_demo/success_html.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -48,14 +52,8 @@ class _CheckoutPage extends State<CheckoutPage> {
       ..addJavaScriptChannel(
         'Toaster',
         onMessageReceived: (JavaScriptMessage message) {
-          debugPrint('Message Received $message');
           if (message.message.toLowerCase() == "success") {
-            debugPrint('SUCCESS MESSAGE RECEIVED');
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => PaymentPage(_checkoutParameters),
-              ),
-            );
+            _checkoutParameters.onSuccess(message.message);
           } else {
             _checkoutParameters.onFailure(message.message);
           }
@@ -85,42 +83,81 @@ class _CheckoutPage extends State<CheckoutPage> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {
-            debugPrint('WebView is loading (Progress == $progress)');
+            debugPrint('WebView is loading (progress : $progress%)');
           },
           onPageStarted: (String url) {
-            debugPrint('PAGE WITH URL $url STARTED');
+            debugPrint('Page started loading: $url');
           },
-          onPageFinished: (String url) {
-            debugPrint('PAGE WITH URL $url FINISHED');
+          onPageFinished: (String url) async {
+            debugPrint('Page finished loading: $url');
           },
           onWebResourceError: (WebResourceError error) {
-            String message =
-                'Page Load Error: Code = ${error.errorCode}, Description = ${error.description}';
-            debugPrint(message);
+            debugPrint('''
+                Page resource error:
+                code: ${error.errorCode}
+                description: ${error.description}
+                errorType: ${error.errorType}
+                isForMainFrame: ${error.isForMainFrame}
+                ''');
+            log(error.errorCode.toString());
             if (error.url?.contains("localhost") == false) {
-              _checkoutParameters.onFailure(message);
+              _checkoutParameters.onFailure(
+                error.errorCode.toString() + error.description,
+              );
+            } else if (error.url?.contains("success") == true) {
+              _checkoutParameters.onSuccess("SUCCESS");
+            } else if (error.url?.contains("failure") == true) {
+              _checkoutParameters.onFailure("Url contains FAILURE");
             }
           },
           onHttpError: (HttpResponseError error) {
-            String message =
-                'Page Load HTTP Error: Code = ${error.response?.statusCode}';
-            debugPrint(message);
+            debugPrint(
+              'Error occurred on page: ${error.response?.statusCode}',
+            );
             if (error.request?.uri.toString().contains("localhost") == false) {
-              _checkoutParameters.onFailure(message);
+              _checkoutParameters.onFailure(
+                'Error Code: ' + '${error.response?.statusCode}',
+              );
             }
           },
           onNavigationRequest: (NavigationRequest request) {
             if (request.url.startsWith('https://') ||
                 request.url.startsWith('http://')) {
-              debugPrint('Allowing Navigation: URL ${request.url}');
+              debugPrint(
+                  'Payment page  navigation to: ${request.isMainFrame} ${request.url}');
+              if (request.url.contains('success')) {
+                _checkoutWbController?.loadHtmlString(
+                  _checkoutParameters.customSuccessHtml ?? SuccessHtml.content,
+                  baseUrl: request.url,
+                );
+                if (_checkoutParameters.customSuccessHtml
+                        ?.contains("localhost") ==
+                    true) {
+                  _checkoutParameters.onSuccess("SUCCESS");
+                }
+                return NavigationDecision.prevent;
+              } else if (request.url.contains('failure')) {
+                _checkoutWbController?.loadHtmlString(
+                  _checkoutParameters.customFailureHtml ?? FailureHtml.content,
+                  baseUrl: request.url,
+                );
+                if (_checkoutParameters.customFailureHtml
+                        ?.contains("localhost") ==
+                    true) {
+                  _checkoutParameters.onFailure("LOCALHOST FAILURE");
+                }
+                return NavigationDecision.prevent;
+              }
               return NavigationDecision.navigate;
             } else {
-              debugPrint('Preventing Navigation: URL ${request.url}');
+              debugPrint('Blocking navigation to: ${request.url}');
               return NavigationDecision.prevent;
             }
           },
         ),
-      );
+      )
+      ..setOnConsoleMessage((consoleMessage) =>
+          debugPrint(" console msg${consoleMessage.message}"));
   }
 
   @override
@@ -132,7 +169,7 @@ class _CheckoutPage extends State<CheckoutPage> {
 
   Future<void> _enableLocalStorageAccess() async {
     if (_checkoutWbController != null) {
-      await _checkoutWbController!.runJavaScriptReturningResult('''
+      await _checkoutWbController!.runJavaScript('''
         try {
           window.localStorage.setItem('test', 'value');
           window.localStorage.getItem('test');
