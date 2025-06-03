@@ -30,7 +30,7 @@ class _CheckoutPage extends State<CheckoutPage> {
   void initState() {
     debugPrint("Checkout Page initState called");
     _initializeCheckoutWbController();
-    _enableLocalStorageAccess();
+    // _enableLocalStorageAccess();
     super.initState();
   }
 
@@ -89,10 +89,11 @@ class _CheckoutPage extends State<CheckoutPage> {
             debugPrint('Page started loading: $url');
           },
           onPageFinished: (String url) async {
+            await _enableLocalStorageAccess();
             debugPrint('Page finished loading: $url');
           },
           onWebResourceError: (WebResourceError error) {
-            debugPrint('''
+            log('''
                 Page resource error:
                 code: ${error.errorCode}
                 description: ${error.description}
@@ -107,7 +108,7 @@ class _CheckoutPage extends State<CheckoutPage> {
             } else if (error.url?.contains("success") == true) {
               _checkoutParameters.onSuccess("SUCCESS");
             } else if (error.url?.contains("failure") == true) {
-              _checkoutParameters.onFailure("Url contains FAILURE");
+              _checkoutParameters.onFailure("FAILURE");
             }
           },
           onHttpError: (HttpResponseError error) {
@@ -136,7 +137,7 @@ class _CheckoutPage extends State<CheckoutPage> {
                   _checkoutParameters.onSuccess("SUCCESS");
                 }
                 return NavigationDecision.prevent;
-              } else if (request.url.contains('failure')) {
+              } else if (request.url.contains('fail') || request.url.contains('failure')) {
                 _checkoutWbController?.loadHtmlString(
                   _checkoutParameters.customFailureHtml ?? FailureHtml.content,
                   baseUrl: request.url,
@@ -170,13 +171,14 @@ class _CheckoutPage extends State<CheckoutPage> {
   Future<void> _enableLocalStorageAccess() async {
     if (_checkoutWbController != null) {
       await _checkoutWbController!.runJavaScript('''
-        try {
-          window.localStorage.setItem('test', 'value');
-          window.localStorage.getItem('test');
-        } catch (e) {
-          console.error('Failed to access local storage:', e);
-        }
-      ''');
+  try {
+    window.localStorage.setItem('test', 'value');
+    const value = window.localStorage.getItem('test');
+    console.log("LocalStorage set/get success:", value);
+  } catch (e) {
+    console.error('LocalStorage error:', e);
+  }
+''');
     }
   }
 }
