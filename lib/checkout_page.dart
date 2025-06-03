@@ -137,7 +137,8 @@ class _CheckoutPage extends State<CheckoutPage> {
                   _checkoutParameters.onSuccess("SUCCESS");
                 }
                 return NavigationDecision.prevent;
-              } else if (request.url.contains('fail') || request.url.contains('failure')) {
+              } else if (request.url.contains('fail') ||
+                  request.url.contains('failure')) {
                 _checkoutWbController?.loadHtmlString(
                   _checkoutParameters.customFailureHtml ?? FailureHtml.content,
                   baseUrl: request.url,

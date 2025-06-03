@@ -1,8 +1,8 @@
 class Constants {
   static const String EXPO_PUBLIC_BUSINESS_NAME= "Citytech Demo";
-    static const String EXPO_PUBLIC_PAP_INFO =
-  "eyJpbnN0aXR1dGlvbklkIjoiMTExIiwibWlkIjoiNTU1NTUxMTExMTMzMTIzIiwidGlkIjoiNTUxMTU1MTEifQ==";
-      // "eyJpbnN0aXR1dGlvbklkIjoibGF4cDZ2ciIsIm1pZCI6IjEwMDU1NTQwMDAwMDAwMSIsInRpZCI6IjU1NTAwMDAxIn0=";
+    static const String EXPO_PUBLIC_PAP_INFO = "eyJpbnN0aXR1dGlvbklkIjoibGF4cDZ2ciIsIm1pZCI6IjEwMDU1NTQwMDAwMDAwMSIsInRpZCI6IjU1NTAwMDAxIn0="
+  // "eyJpbnN0aXR1dGlvbklkIjoiMTExIiwibWlkIjoiNTU1NTUxMTExMTMzMTIzIiwidGlkIjoiNTUxMTU1MTEifQ=="; qa pap info
+     ;
   static const String EXPO_PUBLIC_OPR_KEY="4fa4c6b9-3f91-43e5-9b4f-319f68187ba5";
   static const String EXPO_PUBLIC_INS_KEY="000";
   static const String EXPO_PUBLIC_WEBSITE_DOMAIN="http://localhost:3000";
