@@ -5,6 +5,10 @@
 .pub/
 .flutter-plugins
 .flutter-plugins-dependencies
+# Flutter/Dart/Pub related
+.pub/
+build/
+generated_plugin_registrant.dart
 
 # Build outputs
 build/
@@ -78,6 +82,7 @@ version.json
 .fvm/
 .fvm/flutter_sdk/
 .fvm/fvm_config.json
+.fvmrc
 
 
 gen/
