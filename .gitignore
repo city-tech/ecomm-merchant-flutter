@@ -5,10 +5,11 @@
 .pub/
 .flutter-plugins
 .flutter-plugins-dependencies
-# Flutter/Dart/Pub related
 .pub/
-build/
+/build/
 generated_plugin_registrant.dart
+.dart_tool
+
 
 # Build outputs
 build/
