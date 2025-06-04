@@ -49,11 +49,9 @@ class CheckoutHtml {
             </div>
           </div>`,
         onSuccess: (response) => {
-            console.log(response + JSON.stringify(response));
             Toaster.postMessage("success");
         },
         onError: (error) => {
-        console.log(error + JSON.stringify(error));
             Toaster.postMessage("error");
         },
     };

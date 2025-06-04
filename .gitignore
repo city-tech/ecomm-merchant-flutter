@@ -81,3 +81,4 @@ version.json
 
 
 gen/
+build/app/intermediates/assets/debug/mergeDebugAssets/flutter_assets/kernel_blob.bin

@@ -90,9 +90,9 @@ class _PaymentPage extends State<PaymentPage> {
               _checkoutParameters.onFailure(
                 error.errorCode.toString() + error.description,
               );
-            } else if(error.url?.contains("success") == true) {
+            } else if (error.url?.contains("success") == true) {
               _checkoutParameters.onSuccess("SUCCESS");
-            } else if(error.url?.contains("failure") == true) {
+            } else if (error.url?.contains("failure") == true) {
               _checkoutParameters.onSuccess("FAILURE");
             }
           },
@@ -115,7 +115,9 @@ class _PaymentPage extends State<PaymentPage> {
                   _checkoutParameters.customSuccessHtml ?? SuccessHtml.content,
                   baseUrl: request.url,
                 );
-                if (_checkoutParameters.customSuccessHtml?.contains("localhost") == true) {
+                if (_checkoutParameters.customSuccessHtml
+                        ?.contains("localhost") ==
+                    true) {
                   _checkoutParameters.onSuccess("SUCCESS");
                 }
               } else {
@@ -123,7 +125,9 @@ class _PaymentPage extends State<PaymentPage> {
                   _checkoutParameters.customFailureHtml ?? FailureHtml.content,
                   baseUrl: request.url,
                 );
-                if (_checkoutParameters.customFailureHtml?.contains("localhost") == true) {
+                if (_checkoutParameters.customFailureHtml
+                        ?.contains("localhost") ==
+                    true) {
                   _checkoutParameters.onSuccess("FAILURE");
                 }
               }
