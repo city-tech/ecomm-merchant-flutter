@@ -3,6 +3,13 @@
 .packages
 .pub-cache/
 .pub/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub/
+/build/
+generated_plugin_registrant.dart
+.dart_tool
+
 
 # Build outputs
 build/
@@ -36,7 +43,10 @@ android/app/release/
 *.DS_Store
 *.bak
 *.orig
-
+*.dill
+*.snap
+*.json
+*.stamp
 # Firebase / Local config (optional, if you have secrets)
 *.env
 firebase_options.dart
@@ -68,3 +78,13 @@ fastlane/screenshots/
 
 # Dart tool internal version tracking
 version.json
+
+# FVM Version Cache
+.fvm/
+.fvm/flutter_sdk/
+.fvm/fvm_config.json
+.fvmrc
+
+
+gen/
+build/app/intermediates/assets/debug/mergeDebugAssets/flutter_assets/kernel_blob.bin

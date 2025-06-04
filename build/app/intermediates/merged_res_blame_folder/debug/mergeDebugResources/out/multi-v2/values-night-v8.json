@@ -4,7 +4,7 @@
             "outputFile": "global.citytech.ecomm_merchant_demo.app-mergeDebugResources-25:/values-night-v8/values-night-v8.xml",
             "map": [
                 {
-                    "source": "/Users/uniqueshakya/Workspace/Flutter/ecomm_merchant_demo/android/app/src/main/res/values-night/styles.xml",
+                    "source": "/Users/citytech/Documents/ecomm-merchant-flutter/android/app/src/main/res/values-night/styles.xml",
                     "from": {
                         "startLines": "3,14",
                         "startColumns": "4,4",
