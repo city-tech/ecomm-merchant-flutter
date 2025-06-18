@@ -45,7 +45,7 @@ class _CheckoutPage extends State<CheckoutPage> {
   }
 
   void _initializeCheckoutWbController() {
-    _checkoutWbController = WebViewController(
+    final controller = WebViewController(
       onPermissionRequest: (request) {
         request.platform.grant();
       },
@@ -162,6 +162,10 @@ class _CheckoutPage extends State<CheckoutPage> {
       )
       ..setOnConsoleMessage((consoleMessage) =>
           debugPrint(" console msg${consoleMessage.message}"));
+
+    setState(() {
+      _checkoutWbController = controller;
+    });
   }
 
   @override
