@@ -5,6 +5,7 @@ import 'package:ecomm_merchant_demo/checkout_parameters.dart';
 import 'package:ecomm_merchant_demo/failure_html.dart';
 import 'package:ecomm_merchant_demo/success_html.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'constants.dart';
@@ -16,12 +17,13 @@ class CheckoutPage extends StatefulWidget {
   const CheckoutPage(this._checkoutParameters, {super.key});
 
   @override
-  _CheckoutPage createState() => _CheckoutPage();
+  _CheckoutPage createState() => _CheckoutPage(_checkoutParameters);
 }
 
 class _CheckoutPage extends State<CheckoutPage> {
   WebViewController? _checkoutWbController;
-
+  final CheckoutParameters _checkoutParameters;
+  _CheckoutPage(this._checkoutParameters);
   @override
   void initState() {
     debugPrint("Checkout Page initState called");
@@ -55,29 +57,29 @@ class _CheckoutPage extends State<CheckoutPage> {
         'Toaster',
         onMessageReceived: (JavaScriptMessage message) {
           if (message.message.toLowerCase() == "success") {
-            widget._checkoutParameters.onSuccess(message.message);
+            _checkoutParameters.onSuccess(message.message);
           } else {
-            widget._checkoutParameters.onFailure(message.message);
+            _checkoutParameters.onFailure(message.message);
           }
         },
       )
       ..loadHtmlString(
         CheckoutHtml().checkoutWithParameters(
-          widget._checkoutParameters.merchantName,
-          widget._checkoutParameters.papInfo,
-          widget._checkoutParameters.secretKey,
-          widget._checkoutParameters.institutionKey != null
-              ? widget._checkoutParameters.institutionKey!
+          _checkoutParameters.merchantName,
+          _checkoutParameters.papInfo,
+          _checkoutParameters.secretKey,
+          _checkoutParameters.institutionKey != null
+              ? _checkoutParameters.institutionKey!
               : '',
-          widget._checkoutParameters.websiteDomain != null
-              ? widget._checkoutParameters.websiteDomain!
+          _checkoutParameters.websiteDomain != null
+              ? _checkoutParameters.websiteDomain!
               : Constants.EXPO_PUBLIC_WEBSITE_DOMAIN,
-          widget._checkoutParameters.amount,
-          widget._checkoutParameters.businessName,
-          widget._checkoutParameters.logoUrl,
-          widget._checkoutParameters.bank,
-          widget._checkoutParameters.requestNumber,
-          widget._checkoutParameters.currency,
+          _checkoutParameters.amount,
+          _checkoutParameters.businessName,
+          _checkoutParameters.logoUrl,
+          _checkoutParameters.bank,
+          _checkoutParameters.requestNumber,
+          _checkoutParameters.currency,
         ),
         // CheckoutHtml.checkoutScript,
         baseUrl: Constants.EXPO_PUBLIC_WEBSITE_DOMAIN,
@@ -95,7 +97,7 @@ class _CheckoutPage extends State<CheckoutPage> {
             debugPrint('Page finished loading: $url');
           },
           onWebResourceError: (WebResourceError error) {
-            log('''
+            debugPrint('''
                 Page resource error:
                 code: ${error.errorCode}
                 description: ${error.description}
@@ -118,36 +120,39 @@ class _CheckoutPage extends State<CheckoutPage> {
               'Error occurred on page: ${error.response?.statusCode}',
             );
             if (error.request?.uri.toString().contains("localhost") == false) {
-              widget._checkoutParameters.onFailure(
+              _checkoutParameters.onFailure(
                 'Error Code: ' + '${error.response?.statusCode}',
               );
             }
           },
           onNavigationRequest: (NavigationRequest request) async {
+            debugPrint('Payment page  navigation to:  ${request.url}');
             if (request.url.startsWith('https://') ||
                 request.url.startsWith('http://')) {
               debugPrint('Payment page  navigation to:  ${request.url}');
               if (request.url.contains('success') && !isPaymentInitiated) {
                 isPaymentInitiated = true;
                 await _checkoutWbController?.loadHtmlString(
-                  widget._checkoutParameters.customSuccessHtml ??
-                      SuccessHtml.content,
+                  _checkoutParameters.customSuccessHtml ?? SuccessHtml.content,
                   baseUrl: request.url,
                 );
-                if (widget._checkoutParameters.customSuccessHtml
+                if (_checkoutParameters.customSuccessHtml
                         ?.contains("localhost") ==
                     true) {
-                  widget._checkoutParameters.onSuccess("SUCCESS");
+                  _checkoutParameters.onSuccess("SUCCESS");
                 }
 
                 return NavigationDecision.prevent;
               } else if (request.url.contains('fail') && !isPaymentInitiated) {
                 isPaymentInitiated = true;
-
-                if (widget._checkoutParameters.customFailureHtml
+                await _checkoutWbController?.loadHtmlString(
+                  _checkoutParameters.customFailureHtml ?? FailureHtml.content,
+                  baseUrl: request.url,
+                );
+                if (_checkoutParameters.customFailureHtml
                         ?.contains("localhost") ==
                     true) {
-                  widget._checkoutParameters.onFailure("FAILURE");
+                  _checkoutParameters.onFailure("FAILURE");
                 }
 
                 return NavigationDecision.prevent;

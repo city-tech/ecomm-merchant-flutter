@@ -122,7 +122,7 @@ class CheckoutHtml {
         websiteDomain: "$websiteDomain",
         price: $amount,
         businessName: "$businessName",
-        imageUrl: "$imageUrl",
+        // imageUrl: "$imageUrl",
         clientRequestId: "$clientRequestId",
         baseUrl: "$baseUrl",
         currency: "$currency",
