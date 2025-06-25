@@ -95,4 +95,19 @@ class CheckoutParameters {
 
   String? customSuccessHtml;
   String? customFailureHtml;
+
+  //toString
+  @override
+  String toString() {
+    return "CheckoutParameters{" "merchantName='" +
+        _merchantName +
+        '\'' +
+        ", papInfo='" +
+        _papInfo +
+        '\'' +
+        ", secretKey='" +
+        _secretKey +
+        '\'' +
+        '}';
+  }
 }
