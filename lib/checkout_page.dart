@@ -111,7 +111,7 @@ class _CheckoutPage extends State<CheckoutPage> {
               );
             } else if (error.url?.contains("success") == true) {
               widget._checkoutParameters.onSuccess("SUCCESS");
-            } else if (error.url?.contains("failure") == true) {
+            } else if (error.url?.contains("fail") == true) {
               widget._checkoutParameters.onFailure("FAILURE");
             }
           },
@@ -121,7 +121,7 @@ class _CheckoutPage extends State<CheckoutPage> {
             );
             if (error.request?.uri.toString().contains("localhost") == false) {
               _checkoutParameters.onFailure(
-                'Error Code: ' + '${error.response?.statusCode}',
+                'Error Code: ' '${error.response?.statusCode}',
               );
             }
           },
