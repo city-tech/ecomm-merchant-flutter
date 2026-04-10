@@ -1,15 +1,12 @@
 import 'dart:developer';
-import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bundle_js/payment.dart';
-import 'package:webview_flutter_plus/webview_flutter_plus.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'constants.dart' as Constants;
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 
@@ -19,451 +16,324 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter WebView Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: CheckoutPage(),
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: CartPage(),
     );
   }
 }
 
-class CheckoutPage extends StatefulWidget {
+// ─── Cart Page ────────────────────────────────────────────────────────────────
+class CartPage extends StatefulWidget {
   @override
-  _CheckoutPageState createState() => _CheckoutPageState();
+  _CartPageState createState() => _CartPageState();
 }
 
-class _CheckoutPageState extends State<CheckoutPage> {
-  late WebViewControllerPlus _controller;
-  static TextEditingController _amountController = TextEditingController();
-  // late AnimationController _animationController;
-
-  @override
-  void dispose() {
-    _controller.removeJavaScriptChannel(
-      'Toaster',
-    );
-    super.dispose();
-  }
-
-  // Dynamic HTML content
-  String htmlContent = "";
-  @override
-  void initState() {
-    super.initState();
-
-    htmlContent = '''
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/>
-    <title>Your Business Title</title>
-    <script defer="defer" src="${Constants.Constants.EXPO_PUBLIC_BUNDLE_URL}"></script>
-    <style>
-      #checkout-btn {
-          display: block;
-          text-align: center;
-          margin-bottom: 1em;
-          font-size: 1.25em;
-          padding: 1em;
-          cursor: pointer;
-          background-color: burlywood;
-          border-radius: .33rem;
-          border-color: var(--wp--preset--color--contrast);
-          border-width: 0;
-          color: var(--wp--preset--color--base);
-          font-family: inherit;
-          font-size: var(--wp--preset--font-size--small);
-          font-style: normal;
-          font-weight: 500;
-          line-height: inherit;
-          text-decoration: none;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="checkout" hidden></div>
-    <button id="checkout-btn">Checkout</button>
-    <script type="text/javascript">
-      // Set options for GetPay checkout
-      const options = {
-        userInfo: {
-          name: "John Doe",
-          email: "john@gmail.com",
-          state: "Bagmati",
-          country: "Nepal",
-          zipcode: "44600",
-          city: "Kathmandu",
-          address: "Chabahil",
-        },
-        papInfo: "${Constants.Constants.EXPO_PUBLIC_PAP_INFO}",
-        oprKey: "${Constants.Constants.EXPO_PUBLIC_OPR_KEY}",
-        insKey: "${Constants.Constants.EXPO_PUBLIC_INS_KEY}",
-        websiteDomain: "${Constants.Constants.EXPO_PUBLIC_WEBSITE_DOMAIN}",
-        price: 1000,  // Replace with your dynamic price calculation
-        businessName: "${Constants.Constants.EXPO_PUBLIC_BUSINESS_NAME}",
-        imageUrl: "${Constants.Constants.EXPO_PUBLIC_LOGO_URL}",
-        currency: "NPR",
-        prefill: {
-          name: true,
-          email: true,
-          state: true,
-          city: true,
-          address: true,
-          zipcode: true,
-          country: true
-        },
-        disableFields: {
-          address: true,
-          state: true
-        },
-        callbackUrl: {
-          successUrl: "${Constants.Constants.EXPO_PUBLIC_SUCCESS_URL}",
-          failUrl: "${Constants.Constants.EXPO_PUBLIC_FAIL_URL}"
-        },
-        themeColor: "#5662FF",
-     orderInformationUI: \`
-          <div style='display: flex; align-items: center; margin-bottom: 10px;'>
-            <img style='max-width: 50px; margin-right: 10px;' src='https://media.istockphoto.com/id/821282266/photo/white-mug-isolated.jpg?s=2048x2048&w=is&k=20&c=aMUoxLBq_4VOE5HbYpWebboQNerQzoH4ASAiFjk0R3g=' alt='Cup'>
-            <div>
-              <p>Cups</p>
-              <span>Rs 600</span>
-            </div>
-            <br>
-          </div>
-              <div style='display: flex; align-items: center; margin-bottom: 10px;'>
-            <img style='max-width: 50px; margin-right: 10px;' src='https://www.artis.in/cdn/shop/products/1_f5b3377c-c870-420f-bc6a-5cd4b3a5a7c7.jpg?v=1653639993' alt='Speaker'>
-            <div>
-              <p>Speaker</p>
-              <span>Rs 400</span>
-            </div>`,
-        // Handle success response
-        onSuccess: (response) => {
-          Toaster.postMessage("success");  // No need for window.onload here
-        },
-        // Handle error response
-        onError: (error) => {
-          Toaster.postMessage("error");  // No need for window.onload here
-        },
-      };
-
-      // Checkout button click handler
-      document.getElementById('checkout-btn').onclick = function (e) {
-        // Notify Flutter that the loading has started
-         if (window.Toaster) {
-    window.Toaster.postMessage("success");
-  } else {
-    console.log("Toaster channel is not available.");
-  }
-   window.Toaster.postMessage("success");
-
-        // Initialize GetPay with the given options
-        const getPay = new GetPay(options);
-        options.baseUrl = "${Constants.Constants.EXPO_PUBLIC_BASE_URL}"
-        getPay.initialize();
-    
-      };
-    </script>
-  </body>
-</html>
-
-  ''';
-    _controller = WebViewControllerPlus(
-      onPermissionRequest: (request) {
-        request.platform.grant();
-      },
-    )
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..addJavaScriptChannel(
-        'Toaster',
-        onMessageReceived: (JavaScriptMessage message) {
-          print('message trigged' + message.toString());
-          if (message.message == "success") {
-            print('buton clicked');
-
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => WebViewExample(),
-              ),
-            );
-          } else {
-            print(message.message.toString());
-          }
-        },
-      )
-      ..setJavaScriptMode(JavaScriptMode.unrestricted).then((value) async {})
-      ..loadHtmlString(htmlContent,
-          baseUrl: '${Constants.Constants.EXPO_PUBLIC_WEBSITE_DOMAIN}')
-      ..setNavigationDelegate(NavigationDelegate(
-        onProgress: (int progress) {
-          log('WebView is loading (progress : $progress%)');
-        },
-        onPageStarted: (String url) {
-          log('Page started loading: $url');
-        },
-        onPageFinished: (String url) async {
-          log('Page finished loading: $url');
-          if (Platform.isAndroid) {}
-        },
-        onWebResourceError: (WebResourceError error) {
-          log('''
-                Page resource error:
-                code: ${error.errorCode}
-                description: ${error.description}
-                errorType: ${error.errorType}
-                isForMainFrame: ${error.isForMainFrame}
-                ''');
-          Text(
-              'code: -6 description: net::ERR_CONNECTION_REFUSED, errorType: WebResourceErrorType.connect, isForMainFrame: false');
-        },
-        onHttpError: (HttpResponseError error) {
-          log('Error occurred on page: ${error.response?.statusCode}');
-        },
-        onNavigationRequest: (NavigationRequest request) {
-          if (request.url.startsWith('https://') ||
-              request.url.startsWith('http://')) {
-            log('Allowing navigation to: ${request.url}');
-            return NavigationDecision.navigate;
-          } else {
-            log('Blocking navigation to: ${request.url}');
-            return NavigationDecision.prevent;
-          }
-        },
-      ))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onProgress: (int progress) {},
-          onPageStarted: (String url) {},
-          onPageFinished: (String url) {},
-          onWebResourceError: (WebResourceError error) {
-            log("Error === $error");
-          },
-          onNavigationRequest: (NavigationRequest request) {
-            // This is equivalent to originWhitelist={['*']}
-            // It allows navigation to all origins
-            return NavigationDecision.navigate;
-          },
-        ),
-      );
-    // _animationController = AnimationController(
-    //   /// [AnimationController]s can be created with `vsync: this` because of
-    //   /// [TickerProviderStateMixin].
-    //   vsync: this,
-    //   duration: const Duration(seconds: 5),
-    // )..addListener(() {
-    //     setState(() {});
-    //   });
-
-    _enableLocalStorageAccess();
-  }
-
-  Future<void> _enableLocalStorageAccess() async {
-    // if (_controller != null) {
-    await _controller.runJavaScriptReturningResult('''
-        try {
-          window.localStorage.setItem('test', 'value');
-          window.localStorage.getItem('test');
-        } catch (e) {
-          console.error('Failed to access local storage:', e);
-        }
-      ''');
-    // }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-  }
-
+class _CartPageState extends State<CartPage> {
   int counter1 = 1;
   int _counter2 = 1;
+  bool _bundleLoaded = false;
+  bool _isCheckingOut = false;
+  InAppWebViewController? _bgController;
 
-  int totalCupPrice = 600;
-  int totalSpeakerPrice = 400;
+  int get _grandTotal => counter1 * 600 + _counter2 * 400;
 
-  bool isCup = false;
-  bool isSpeaker = false;
+  int calculateTotalEachCup({required int count, required int price}) => count * price;
+  int calculateTotalEachSpeaker({required int count, required int price}) => count * price;
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text('Checkout Page'),
-        ),
-        body: Column(
-          children: [
-            Container(
-              height: 60.0,
-              decoration: const BoxDecoration(
-                color: Color.fromARGB(255, 241, 235, 179),
-              ),
-              child: const Center(
-                child:
-                    Text('TEST Online Store', style: TextStyle(fontSize: 18)),
-              ),
-            ),
-            const Divider(
-              color: Colors.grey,
-              thickness: 1,
-            ),
-            const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Cart Items',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.0),
-                )),
-            const SizedBox(height: 20.0),
-            ListTile(
-              leading: Container(
-                child: Image.asset('assets/cup.png'),
-                height: 60,
-                width: 60,
-              ),
-              title: Text('Cup Set',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Rs 600'),
-                  Divider(),
-                  Text(
-                      "Total: ${calculateTotalEachCup(count: counter1, price: 600)}")
-                ],
-              ),
-              trailing: Container(height: 100, child: itemCounter1()),
-            ),
-            ListTile(
-              leading: Container(
-                child: Image.asset('assets/speaker.png'),
-                height: 60,
-                width: 60,
-              ),
-              title: Text('Speaker',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Rs 400'),
-                  Divider(),
-                  Text(
-                      "Total: ${calculateTotalEachSpeaker(count: _counter2, price: 400)}")
-                ],
-              ),
-              trailing: itemCounter2(),
-            ),
-            const SizedBox(height: 20.0),
-            SizedBox(height: 20.0),
-            Container(
-              height: 60,
-              decoration: const BoxDecoration(color: Colors.grey),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Total',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  SizedBox(
-                      width: 90, child: Text(calculateGrandTotal().toString())),
-                ],
-              ),
-            ),
-            const SizedBox(height: 18.0),
-            Row(
-              children: [
-                Spacer(),
-                Container(
-                  height: 70,
-                  width: 110,
-                  child: WebViewWidget(
-                    controller: _controller,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ));
+  // ─── Background HTML: loads bundle only on startup ────────────────────────
+  String get _preloadHtml => '''
+<!DOCTYPE html><html lang="en">
+<head><meta charset="UTF-8"/></head>
+<body>
+  <div id="checkout"></div>
+  <script>
+    const script = document.createElement('script');
+    script.src = "${Constants.Constants.EXPO_PUBLIC_BUNDLE_URL}";
+    script.async = true;
+    script.onload = function() {
+      if (window.flutter_inappwebview)
+        window.flutter_inappwebview.callHandler('onBundleLoaded');
+    };
+    script.onerror = function() {
+      console.warn('Bundle load failed');
+    };
+    document.head.appendChild(script);
+  </script>
+</body></html>
+''';
+
+  // ─── Build checkoutOptions with cart data ─────────────────────────────────
+  // onSuccess fires after GetPay's internal validation APIs complete
+  // → form is rendered in #checkout → navigate to payment.dart
+  String _buildCheckoutOptions() {
+    return '''
+{
+  userInfo: {
+    name: "John Doe",
+    email: "john@gmail.com",
+    state: "Bagmati",
+    country: "NPL",
+    zipcode: "44600",
+    city: "Kathmandu",
+    address: "Chabahil",
+    phone: "+977-9800000000"
+  },
+  papInfo: "${Constants.Constants.EXPO_PUBLIC_PAP_INFO}",
+  oprKey: "${Constants.Constants.EXPO_PUBLIC_OPR_KEY}",
+  insKey: "${Constants.Constants.EXPO_PUBLIC_INS_KEY}",
+  websiteDomain: "${Constants.Constants.EXPO_PUBLIC_WEBSITE_DOMAIN}",
+  baseUrl: "${Constants.Constants.EXPO_PUBLIC_BASE_URL}",
+  price: "$_grandTotal",
+  currency: "NPR",
+  businessName: "${Constants.Constants.EXPO_PUBLIC_BUSINESS_NAME}",
+  imageUrl: "${Constants.Constants.EXPO_PUBLIC_LOGO_URL}",
+  prefill: { name: true, email: true, state: true, city: true, address: true, zipcode: true, country: true, phone: true },
+  disableFields: { address: false, state: false },
+  callbackUrl: {
+    successUrl: "${Constants.Constants.EXPO_PUBLIC_SUCCESS_URL}",
+    failUrl: "${Constants.Constants.EXPO_PUBLIC_FAIL_URL}"
+  },
+  themeColor: "#5662FF",
+  termsText: "I agree to the Terms & Conditions and Privacy Policy",
+  orderInformationUI: \`
+    <div style='padding: 16px; background: #f9f9f9; border-radius: 8px; margin-bottom: 16px;'>
+      <h3 style='margin-bottom: 12px; font-size: 16px; font-weight: 600;'>Order Summary</h3>
+      <div style='display: flex; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #eee;'>
+        <img style='width: 50px; height: 50px; margin-right: 12px; border-radius: 4px; object-fit: cover;'
+          src='https://media.istockphoto.com/id/821282266/photo/white-mug-isolated.jpg?s=2048x2048&w=is&k=20&c=aMUoxLBq_4VOE5HbYpWebboQNerQzoH4ASAiFjk0R3g=' alt='Cup'>
+        <div style='flex: 1;'>
+          <p style='margin: 0; font-weight: 500;'>Cups (x$counter1)</p>
+          <p style='margin: 0; color: #999; font-size: 14px;'>Rs 600 each</p>
+        </div>
+        <p style='margin: 0; font-weight: 600;'>Rs ${counter1 * 600}</p>
+      </div>
+      <div style='display: flex; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #eee;'>
+        <img style='width: 50px; height: 50px; margin-right: 12px; border-radius: 4px; object-fit: cover;'
+          src='https://www.artis.in/cdn/shop/products/1_f5b3377c-c870-420f-bc6a-5cd4b3a5a7c7.jpg?v=1653639993' alt='Speaker'>
+        <div style='flex: 1;'>
+          <p style='margin: 0; font-weight: 500;'>Speaker (x$_counter2)</p>
+          <p style='margin: 0; color: #999; font-size: 14px;'>Rs 400 each</p>
+        </div>
+        <p style='margin: 0; font-weight: 600;'>Rs ${_counter2 * 400}</p>
+      </div>
+      <div style='display: flex; align-items: center; padding-top: 12px;'>
+        <div style='flex: 1;'><p style='margin: 0; font-weight: 600; font-size: 16px;'>Grand Total</p></div>
+        <p style='margin: 0; font-weight: 700; font-size: 18px; color: #5662FF;'>Rs $_grandTotal</p>
+      </div>
+    </div>\`,
+  onSuccess: function(response) {
+    // Internal validation APIs done → form rendered → navigate to payment.dart
+    if (window.flutter_inappwebview)
+      window.flutter_inappwebview.callHandler('onPaymentReady');
+  },
+  onError: function(error) {
+    if (window.flutter_inappwebview)
+      window.flutter_inappwebview.callHandler('onPaymentError', JSON.stringify(error));
+  },
+  onClose: function() {
+    console.log('GetPay onClose');
+  }
+}
+''';
   }
 
-  Widget itemCounter1() {
+  // ─── Called when checkout button clicked ─────────────────────────────────
+  // Bundle is already loaded → just call getPay.initialize(options)
+  Future<void> _onCheckoutPressed(BuildContext context) async {
+    if (_bgController == null) {
+      log('✗ Background WebView not ready');
+      return;
+    }
+    if (!_bundleLoaded) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Loading payment gateway, please try again...')),
+      );
+      return;
+    }
+
+    setState(() => _isCheckingOut = true);
+
+    final options = _buildCheckoutOptions();
+    await _bgController!.evaluateJavascript(source: '''
+      try {
+        const options = $options;
+        const getPay = new GetPay(options);
+        getPay.initialize();
+      } catch(e) {
+        if (window.flutter_inappwebview)
+          window.flutter_inappwebview.callHandler('onPaymentError', e.message);
+      }
+    ''');
+  }
+
+  Widget _itemCounter({
+    required int count,
+    required VoidCallback onAdd,
+    required VoidCallback onRemove,
+  }) {
     return Container(
       width: 140,
       height: 100,
       child: Row(
         children: [
-          Card(
-              child: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      counter1 += 1;
-                    });
-                  },
-                  icon: Icon(Icons.add))),
-          Text(counter1.toString()),
-          Card(
-              child: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      if (counter1 > 1) {
-                        counter1 -= 1;
-                      }
-                    });
-                  },
-                  icon: Icon(Icons.remove)))
+          Card(child: IconButton(onPressed: onAdd, icon: Icon(Icons.add))),
+          Text(count.toString()),
+          Card(child: IconButton(onPressed: onRemove, icon: Icon(Icons.remove))),
         ],
       ),
     );
   }
 
-  int totalGrand = 1000;
-  int calculateGrandTotal() {
-    totalGrand = totalCupPrice + totalSpeakerPrice;
-    return totalGrand;
-  }
-
-  int calculateTotalEachCup({
-    required int count,
-    required int price,
-  }) {
-    int totalEach = price * count;
-
-    totalCupPrice = totalEach;
-
-    return totalEach;
-  }
-
-  int calculateTotalEachSpeaker({required int count, required int price}) {
-    int totalEach = price * count;
-
-    totalSpeakerPrice = totalEach;
-
-    return totalEach;
-  }
-
-  Widget itemCounter2() {
-    return Container(
-      width: 150,
-      height: 100,
-      child: Row(
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('My Cart')),
+      body: Column(
         children: [
-          Card(
-              child: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _counter2 += 1;
-                    });
-                  },
-                  icon: Icon(Icons.add))),
-          Text(_counter2.toString()),
-          Card(
-              child: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      if (_counter2 > 1) {
-                        _counter2 -= 1;
-                      }
-                    });
-                  },
-                  icon: Icon(Icons.remove)))
+          // ── Hidden WebView: loads bundle on startup ────────────────────────
+          Offstage(
+            offstage: true,
+            child: SizedBox(
+              height: 1, width: 1,
+              child: InAppWebView(
+                initialData: InAppWebViewInitialData(
+                  data: _preloadHtml,
+                  baseUrl: WebUri(Constants.Constants.EXPO_PUBLIC_WEBSITE_DOMAIN),
+                ),
+                initialSettings: InAppWebViewSettings(
+                  javaScriptEnabled: true,
+                  domStorageEnabled: true,
+                  cacheEnabled: true,
+                ),
+                onWebViewCreated: (controller) {
+                  _bgController = controller;
+
+                  // Bundle loaded → ready for checkout
+                  controller.addJavaScriptHandler(
+                    handlerName: 'onBundleLoaded',
+                    callback: (args) {
+
+                      setState(() => _bundleLoaded = true);
+                    },
+                  );
+
+                  // onSuccess in options → navigate to payment.dart
+                  controller.addJavaScriptHandler(
+                    handlerName: 'onPaymentReady',
+                    callback: (args) {
+
+                      setState(() => _isCheckingOut = false);
+                      final options = _buildCheckoutOptions();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CheckoutWebViewPage(checkoutOptions: options),
+                        ),
+                      );
+                    },
+                  );
+
+                  // onError in options
+                  controller.addJavaScriptHandler(
+                    handlerName: 'onPaymentError',
+                    callback: (args) {
+
+                      setState(() => _isCheckingOut = false);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: ${args.isNotEmpty ? args[0] : "Unknown"}')),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+
+          // ── Cart UI ────────────────────────────────────────────────────────
+          Container(
+            height: 60.0,
+            decoration: const BoxDecoration(color: Color.fromARGB(255, 241, 235, 179)),
+            child: const Center(child: Text('TEST Online Store', style: TextStyle(fontSize: 18))),
+          ),
+          const Divider(color: Colors.grey, thickness: 1),
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Text('Cart Items', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.0)),
+            ),
+          ),
+          ListTile(
+            leading: SizedBox(height: 60, width: 60, child: Image.asset('assets/cup.png')),
+            title: Text('Cup Set', style: TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Rs 600'), Divider(),
+              Text("Total: ${calculateTotalEachCup(count: counter1, price: 600)}")
+            ]),
+            trailing: _itemCounter(
+              count: counter1,
+              onAdd: () => setState(() => counter1 += 1),
+              onRemove: () => setState(() { if (counter1 > 1) counter1 -= 1; }),
+            ),
+          ),
+          ListTile(
+            leading: SizedBox(height: 60, width: 60, child: Image.asset('assets/speaker.png')),
+            title: Text('Speaker', style: TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Rs 400'), Divider(),
+              Text("Total: ${calculateTotalEachSpeaker(count: _counter2, price: 400)}")
+            ]),
+            trailing: _itemCounter(
+              count: _counter2,
+              onAdd: () => setState(() => _counter2 += 1),
+              onRemove: () => setState(() { if (_counter2 > 1) _counter2 -= 1; }),
+            ),
+          ),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            color: Colors.grey[200],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Grand Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text('Rs $_grandTotal', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF5662FF),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onPressed: _isCheckingOut ? null : () => _onCheckoutPressed(context),
+                child: _isCheckingOut
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('Checkout', style: TextStyle(fontSize: 18, color: Colors.white)),
+                          if (_bundleLoaded) ...[
+                            const SizedBox(width: 8),
+                            const Icon(Icons.bolt, color: Colors.white, size: 18),
+                          ],
+                        ],
+                      ),
+              ),
+            ),
+          ),
         ],
       ),
     );
