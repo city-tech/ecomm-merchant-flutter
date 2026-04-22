@@ -114,14 +114,6 @@ class _CheckoutWebViewPageState extends State<CheckoutWebViewPage> {
 
             // ── JS Handlers ──────────────────────────────────────────────────
             onWebViewCreated: (controller) {
-              // Clear stale payment data when checkout page opens
-              controller.evaluateJavascript(source: '''
-                try {
-                  localStorage.removeItem('_DET');
-                } catch(e) {
-                  console.warn('Could not clear localStorage:', e);
-                }
-              ''');
               
               // Hide loading spinner when page loads
               controller.addJavaScriptHandler(
