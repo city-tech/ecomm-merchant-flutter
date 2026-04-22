@@ -4,24 +4,6 @@ A Flutter e-commerce merchant demo app that integrates the **GetPay** payment ga
 
 ---
 
-## Table of Contents
-
-- [Project Structure](#project-structure)
-- [App Flow](#app-flow)
-- [Dependencies](#dependencies)
-- [Android Build Requirements](#android-build-requirements)
-- [Constants Configuration](#constants-configuration)
-- [Key Implementation Details](#key-implementation-details)
-  - [main.dart — Cart Page](#maindart--cart-page)
-  - [payment.dart — Checkout WebView](#paymentdart--checkout-webview)
-  - [success.dart — Payment Success Page](#successdart--payment-success-page)
-  - [fail.dart — Payment Failure Page](#faildart--payment-failure-page)
-  - [constants.dart — Configuration](#constantsdart--configuration)
-- [URL Interception & Redirect Logic](#url-interception--redirect-logic)
-- [Known Issues & Fixes Applied](#known-issues--fixes-applied)
-- [Running the App](#running-the-app)
-
----
 
 ## Project Structure
 
@@ -297,21 +279,6 @@ bool _isPaymentUrl(String url) {
   return path.contains('success') || path.contains('fail');
 }
 ```
-
----
-
-## Known Issues & Fixes Applied
-
-| Issue | Fix |
-|---|---|
-| Kotlin version `1.8.0` too low | Updated `settings.gradle` → KGP `2.1.0` |
-| AGP `8.1.1` too low for `androidx.browser:1.9.0` | Updated `settings.gradle` → AGP `8.9.1` |
-| Gradle `8.7` too low for AGP `8.9.1` | Updated `gradle-wrapper.properties` → Gradle `8.11.1` |
-| `permission_handler_android` v10 `Registrar` compile error | Upgrade `permission_handler` to `^12.0.0` in `pubspec.yaml` |
-| `ERR_CONNECTION_REFUSED` preventing redirect | Intercept URL in all three WebView callbacks (see above) |
-| Stale `_DET` localStorage causing duplicate payment triggers | `localStorage.removeItem('_DET')` in `payment.dart` `onWebViewCreated` |
-| GetPay `onSuccess` firing before form is filled | `onSuccess` in GetPay options = internal API validation complete, not user submission — this is correct behaviour; it signals that the form is ready to display |
-| `page_load_metrics` first_paint chromium warnings | Cosmetic Chromium internal logs, not app errors — can be ignored |
 
 ---
 
