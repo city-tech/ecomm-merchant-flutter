@@ -1,5 +1,8 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'constants.dart';
 
 class SuccessPage extends StatefulWidget {
   final String token;
@@ -11,23 +14,64 @@ class SuccessPage extends StatefulWidget {
 }
 
 class _SuccessPageState extends State<SuccessPage> {
-  late Map<String, dynamic> decodedToken;
-  String? error;
+  Map<String, dynamic> decodedToken = {};
+  Map<String, dynamic>? transactionStatus;
+  String? tokenError;
+  String? apiError;
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _decodeToken();
+    _decodeTokenAndFetchStatus();
   }
 
-  void _decodeToken() {
+  Future<void> _decodeTokenAndFetchStatus() async {
     try {
       // Decode Base64 token
       final decoded = utf8.decode(base64.decode(widget.token));
-      decodedToken = jsonDecode(decoded);
+      final tokenInfo = jsonDecode(decoded) as Map<String, dynamic>;
+      setState(() {
+        decodedToken = tokenInfo;
+      });
+
+      final id = tokenInfo['id'] as String?;
+      if (id == null || id.isEmpty) {
+        setState(() {
+          tokenError = 'Token does not contain an "id" field.';
+          isLoading = false;
+        });
+        return;
+      }
+
+      // POST to merchant-status API
+      final url = Uri.parse('${Constants.EXPO_PUBLIC_BASE_URL}/merchant-status');
+      log('Calling merchant-status API: $url with id: $id');
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'id': id}),
+      );
+
+      log('merchant-status response: ${response.statusCode} ${response.body}');
+
+      if (response.statusCode == 200) {
+        setState(() {
+          transactionStatus = jsonDecode(response.body) as Map<String, dynamic>;
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          apiError = 'API error ${response.statusCode}: ${response.body}';
+          isLoading = false;
+        });
+      }
     } catch (e) {
-      error = 'Failed to decode token: $e';
-      decodedToken = {};
+      setState(() {
+        tokenError = 'Failed to decode token or fetch status: $e';
+        isLoading = false;
+      });
     }
   }
 
@@ -38,7 +82,9 @@ class _SuccessPageState extends State<SuccessPage> {
         title: const Text('Payment Successful'),
         elevation: 0,
       ),
-      body: SingleChildScrollView(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -60,7 +106,6 @@ class _SuccessPageState extends State<SuccessPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              // Success Message
               const Text(
                 'Payment Successful!',
                 style: TextStyle(
@@ -73,14 +118,25 @@ class _SuccessPageState extends State<SuccessPage> {
               const Text(
                 'Your payment has been processed successfully.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF999999),
-                ),
+                style: TextStyle(fontSize: 16, color: Color(0xFF999999)),
               ),
               const SizedBox(height: 32),
-              // Token Details Card
-              if (error == null && decodedToken.isNotEmpty)
+
+              // Error from token decoding
+              if (tokenError != null)
+                Card(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      tokenError!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ),
+
+              // Transaction Status from API
+              if (transactionStatus != null)
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -88,25 +144,22 @@ class _SuccessPageState extends State<SuccessPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Transaction Details',
+                          'Transaction Status',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const Divider(height: 16),
-                        ...decodedToken.entries.map((entry) {
+                        ...transactionStatus!.entries.map((entry) {
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   entry.key,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                  style: const TextStyle(fontWeight: FontWeight.w500),
                                 ),
                                 Flexible(
                                   child: Text(
@@ -119,46 +172,26 @@ class _SuccessPageState extends State<SuccessPage> {
                               ],
                             ),
                           );
-                        }).toList(),
-                      ],
-                    ),
-                  ),
-                )
-              else if (error != null)
-                Card(
-                  color: Colors.red.withValues(alpha: 0.1),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Error',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          error!,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                        const SizedBox(height: 8),
-                        SelectableText(
-                          'Raw Token: ${widget.token}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF999999),
-                          ),
-                        ),
+                        }),
                       ],
                     ),
                   ),
                 ),
+
+              // API error
+              if (apiError != null)
+                Card(
+                  color: Colors.orange.withValues(alpha: 0.1),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      apiError!,
+                      style: const TextStyle(color: Colors.orange),
+                    ),
+                  ),
+                ),
+
               const SizedBox(height: 32),
-              // Action Buttons
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -183,11 +216,8 @@ class _SuccessPageState extends State<SuccessPage> {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   onPressed: () {
-                    // Copy token to clipboard
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Token copied to clipboard'),
-                      ),
+                      const SnackBar(content: Text('Token copied to clipboard')),
                     );
                   },
                   child: const Text('Share Receipt'),
@@ -200,4 +230,3 @@ class _SuccessPageState extends State<SuccessPage> {
     );
   }
 }
-
